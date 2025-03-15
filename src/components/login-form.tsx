@@ -54,74 +54,94 @@ export function LoginForm({
 	}, []);
 
 	return (
-		<div className={cn("flex flex-col gap-6", className)} {...props}>
-			<Card>
-				<CardHeader className="flex items-center justify-center">
-					<Image src={Logo} alt="Logo" width={75} height={75} />
-				</CardHeader>
-				<CardContent>
-					<form onSubmit={onSubmit}>
-						<div className="flex flex-col gap-6">
-							<div className="grid gap-3">
-								<Label htmlFor="email">Email</Label>
-								<Input
-									id="email"
-									type="email"
-									placeholder="m@example.com"
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									required
-								/>
-							</div>
-							<div className="grid gap-3">
-								<div className="flex items-center">
-									<Label htmlFor="password">Password</Label>
+		<div className="flex w-full h-[70svh] items-center justify-center">
+			<div className="w-full max-w-sm">
+				<div
+					className={cn("flex flex-col gap-6", className)}
+					{...props}
+				>
+					<Card>
+						<CardHeader className="flex items-center justify-center">
+							<Image
+								src={Logo}
+								alt="Logo"
+								width={75}
+								height={75}
+							/>
+						</CardHeader>
+						<CardContent>
+							<form onSubmit={onSubmit}>
+								<div className="flex flex-col gap-6">
+									<div className="grid gap-3">
+										<Label htmlFor="email">Email</Label>
+										<Input
+											id="email"
+											type="email"
+											placeholder="m@example.com"
+											value={email}
+											onChange={(e) =>
+												setEmail(e.target.value)
+											}
+											required
+										/>
+									</div>
+									<div className="grid gap-3">
+										<div className="flex items-center">
+											<Label htmlFor="password">
+												Password
+											</Label>
+										</div>
+										<Input
+											id="password"
+											type="password"
+											value={password}
+											onChange={(e) =>
+												setPassword(e.target.value)
+											}
+											required
+										/>
+										<div className="flex items-center justify-between">
+											<a
+												href="#"
+												className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+											>
+												Forgot your password?
+											</a>
+										</div>
+									</div>
+									{error && (
+										<p className="text-red-500 text-sm">
+											{error}
+										</p>
+									)}{" "}
+									{/* ✅ Show error message */}
+									<div className="flex flex-col gap-3 ">
+										<Button
+											type="submit"
+											className="w-full"
+											disabled={loading}
+										>
+											{loading
+												? "Logging in..."
+												: "Login"}{" "}
+											{/* ✅ Show loading state */}
+										</Button>
+									</div>
 								</div>
-								<Input
-									id="password"
-									type="password"
-									value={password}
-									onChange={(e) =>
-										setPassword(e.target.value)
-									}
-									required
-								/>
-								<div className="flex items-center justify-between">
-									<a
-										href="#"
-										className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+								<div className="mt-4 text-center text-sm">
+									Don&apos;t have an account?{" "}
+									<Link
+										href="/register"
+										className="underline underline-offset-4"
 									>
-										Forgot your password?
-									</a>
+										Sign up
+									</Link>
 								</div>
-							</div>
-							{error && (
-								<p className="text-red-500 text-sm">{error}</p>
-							)}{" "}
-							{/* ✅ Show error message */}
-							<div className="flex flex-col gap-3 ">
-								<Button
-									type="submit"
-									className="w-full"
-									disabled={loading}
-								>
-									{loading ? "Logging in..." : "Login"}{" "}
-									{/* ✅ Show loading state */}
-								</Button>
-							</div>
-						</div>
-						<div className="mt-4 text-center text-sm">
-							Don&apos;t have an account?{" "}
-							<Link
-								href="/register"
-								className="underline underline-offset-4"
-							>
-								Sign up
-							</Link>
-						</div>
-					</form>
-				</CardContent>
-			</Card>
+							</form>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
 		</div>
 	);
 }

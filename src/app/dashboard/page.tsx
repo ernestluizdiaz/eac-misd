@@ -1,10 +1,10 @@
 import React from "react";
-import MyDashboard from "@/app/dashboard/dashboard";
+import DashboardNav from "@/app/dashboard/nav";
 
 const Dashboard: React.FC = () => {
 	return (
 		<div>
-			<MyDashboard />
+			<DashboardNav />
 		</div>
 	);
 };

@@ -1,15 +1,11 @@
-import { LoginForm } from "@/components/login-form";
+import TicketForm from "@/components/ticket-form";
 import Nav from "@/components/nav";
 
 export default function Home() {
 	return (
-		<>
+		<div>
 			<Nav />
-			<div className="flex w-full h-[70svh] items-center justify-center">
-				<div className="w-full max-w-sm">
-					<LoginForm />
-				</div>
-			</div>
-		</>
+			<TicketForm />
+		</div>
 	);
 }

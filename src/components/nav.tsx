@@ -19,7 +19,7 @@ const Nav = () => {
 					href="/"
 					className="text-xl font-bold text-gray-900 dark:text-white"
 				>
-					Emilio Aguinaldo College Cavite
+					Emilio Aguinaldo College Cavite-MISD
 				</Link>
 
 				{/* Mobile Menu Button */}

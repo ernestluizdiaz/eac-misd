@@ -47,9 +47,9 @@ const Filer = () => {
 		}
 	};
 
-	const [filers, setFilers] = React.useState<{ id: number; name: string }[]>(
-		[]
-	);
+	const [filers, setFilers] = React.useState<
+		{ filer_id: number; name: string }[]
+	>([]);
 
 	React.useEffect(() => {
 		const fetchFilers = async () => {
@@ -117,7 +117,7 @@ const Filer = () => {
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
 						{filers.map((filer, index) => (
-							<tr key={filer.id}>
+							<tr key={filer.filer_id}>
 								<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 									{index + 1}
 								</td>

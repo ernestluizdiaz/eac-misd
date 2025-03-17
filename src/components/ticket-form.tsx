@@ -34,9 +34,14 @@ const formSchema = z.object({
 	lastName: z.string().min(2, {
 		message: "Last name must be at least 2 characters.",
 	}),
-	email: z.string().email({
-		message: "Invalid email address.",
-	}),
+	email: z
+		.string()
+		.email({
+			message: "Invalid email address.",
+		})
+		.regex(/@eac\.edu\.ph$/, {
+			message: "Email must be a valid @eac.edu.ph address.",
+		}),
 	department: z.string().min(1, {
 		message: "Department is required.",
 	}),
@@ -53,7 +58,6 @@ const formSchema = z.object({
 
 const TicketForm = () => {
 	const [selectedCategory, setSelectedCategory] = useState("");
-	const [customCategory, setCustomCategory] = useState("");
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -67,44 +71,82 @@ const TicketForm = () => {
 		},
 	});
 
-	const [filers, setFilers] = useState<{ id: string; name: string }[]>([]);
-
+	const [filers, setFilers] = useState<{ filer_id: number; name: string }[]>(
+		[]
+	);
 	useEffect(() => {
 		const fetchFilers = async () => {
 			const { data, error } = await supabase
 				.from("filer")
-				.select("id, name");
+				.select("filer_id, name");
 			if (error) {
 				console.error("Error fetching filers:", error.message);
 			} else {
-				setFilers(data);
+				setFilers(
+					data.map((filer: { filer_id: number; name: string }) => ({
+						filer_id: filer.filer_id,
+						name: filer.name,
+					}))
+				);
 			}
 		};
-
 		fetchFilers();
 	}, []);
 
 	const [departments, setDepartments] = useState<
-		{ id: string; name: string }[]
+		{ department_id: number; name: string }[]
 	>([]);
-
 	useEffect(() => {
 		const fetchDepartments = async () => {
 			const { data, error } = await supabase
 				.from("department")
-				.select("id, name");
+				.select("department_id, name");
 			if (error) {
 				console.error("Error fetching departments:", error.message);
 			} else {
-				setDepartments(data);
+				setDepartments(
+					data.map(
+						(department: {
+							department_id: number;
+							name: string;
+						}) => ({
+							department_id: department.department_id,
+							name: department.name,
+						})
+					)
+				);
 			}
 		};
 
 		fetchDepartments();
 	}, []);
 
-	const onSubmit = (data: any) => {
-		console.log(data);
+	const onSubmit = async (data: {
+		firstName: string;
+		lastName: string;
+		email: string;
+		department: string;
+		filer: string;
+		category: string;
+		description: string;
+	}) => {
+		const { error } = await supabase.from("tickets").insert([
+			{
+				first_name: data.firstName,
+				last_name: data.lastName,
+				email: data.email,
+				department_id: data.department, // Ensure this is the ID, not the name
+				filer_id: data.filer,
+				category: data.category,
+				description: data.description,
+			},
+		]);
+
+		if (error) {
+			console.error("Error inserting ticket:", error.message);
+		} else {
+			console.log("Ticket inserted successfully");
+		}
 	};
 
 	return (
@@ -155,7 +197,7 @@ const TicketForm = () => {
 							name="email"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Email Address</FormLabel>
+									<FormLabel>EAC Email Address</FormLabel>
 									<FormControl>
 										<Input
 											placeholder="john.doe@example.com"
@@ -186,8 +228,10 @@ const TicketForm = () => {
 											<SelectContent>
 												{filers.map((filer) => (
 													<SelectItem
-														key={filer.id}
-														value={filer.name}
+														key={filer.filer_id}
+														value={String(
+															filer.filer_id
+														)}
 													>
 														{filer.name}
 													</SelectItem>
@@ -218,10 +262,12 @@ const TicketForm = () => {
 												{departments.map(
 													(department) => (
 														<SelectItem
-															key={department.id}
-															value={
-																department.name
+															key={
+																department.department_id
 															}
+															value={String(
+																department.department_id
+															)}
 														>
 															{department.name}
 														</SelectItem>

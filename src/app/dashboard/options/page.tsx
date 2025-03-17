@@ -49,9 +49,9 @@ const OptionsPage = () => {
 		}
 	};
 
-	const [filers, setFilers] = React.useState<{ id: number; name: string }[]>(
-		[]
-	);
+	const [department, setDepartment] = React.useState<
+		{ department_id: number; name: string }[]
+	>([]);
 
 	React.useEffect(() => {
 		const fetchDepartment = async () => {
@@ -61,7 +61,7 @@ const OptionsPage = () => {
 			if (error) {
 				toast.error("Error fetching filers: " + error.message);
 			} else {
-				setFilers(data);
+				setDepartment(data);
 			}
 		};
 
@@ -130,13 +130,13 @@ const OptionsPage = () => {
 								</tr>
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
-								{filers.map((filer, index) => (
-									<tr key={filer.id}>
+								{department.map((department, index) => (
+									<tr key={department.department_id}>
 										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
 											{index + 1}
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{filer.name}
+											{department.name}
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
 											<button className="text-indigo-600 hover:text-indigo-900">

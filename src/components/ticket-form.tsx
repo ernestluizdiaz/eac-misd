@@ -26,6 +26,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useRouter } from "next/navigation"; // Next.js router import
 
 const formSchema = z.object({
 	firstName: z.string().min(2, {
@@ -58,7 +59,7 @@ const formSchema = z.object({
 
 const TicketForm = () => {
 	const [selectedCategory, setSelectedCategory] = useState("");
-
+	const router = useRouter();
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -130,23 +131,31 @@ const TicketForm = () => {
 		category: string;
 		description: string;
 	}) => {
-		const { error } = await supabase.from("tickets").insert([
-			{
-				first_name: data.firstName,
-				last_name: data.lastName,
-				email: data.email,
-				department_id: data.department, // Ensure this is the ID, not the name
-				filer_id: data.filer,
-				category: data.category,
-				description: data.description,
-			},
-		]);
+		const { data: insertedTicket, error } = await supabase
+			.from("tickets")
+			.insert([
+				{
+					first_name: data.firstName,
+					last_name: data.lastName,
+					email: data.email,
+					department_id: data.department, // Ensure this is the ID, not the name
+					filer_id: data.filer,
+					category: data.category,
+					description: data.description,
+				},
+			])
+			.select("ticket_id") // Select the inserted ticket ID
+			.single();
 
 		if (error) {
 			console.error("Error inserting ticket:", error.message);
-		} else {
-			console.log("Ticket inserted successfully");
+			return;
 		}
+
+		console.log("Ticket inserted successfully", insertedTicket);
+
+		// Redirect to the results page with ticket ID
+		router.push(`/ticket-results?id=${insertedTicket.ticket_id}`);
 	};
 
 	return (

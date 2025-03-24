@@ -36,9 +36,10 @@ const formSchema = z
 		message: "Passwords don't match",
 		path: ["confirmPassword"],
 	});
+
 const TeamsPage = () => {
 	const [teamMembers, setTeamMembers] = useState<
-		{ id: string; display_name: string; role: string }[]
+		{ id: string; display_name: string; role: string[] }[]
 	>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -88,7 +89,7 @@ const TeamsPage = () => {
 						{
 							id: user.id, // Use the user's UUID
 							display_name: displayName,
-							role: "Can View", // Default role
+							role: ["Can View"], // Default role
 						},
 					]);
 
@@ -125,6 +126,55 @@ const TeamsPage = () => {
 
 		fetchTeamMembers();
 	}, []);
+
+	const [editMode, setEditMode] = useState<string | null>(null);
+	const [selectedRoles, setSelectedRoles] = useState<{
+		[key: string]: string[];
+	}>({});
+
+	const handleCheckboxChange = (memberId: string, role: string) => {
+		if (!editMode || editMode !== memberId) return;
+
+		setSelectedRoles((prev) => {
+			const updatedRoles = prev[memberId] || [];
+
+			let newRoles = updatedRoles.includes(role)
+				? updatedRoles.filter((r) => r !== role) // Remove if checked off
+				: [...updatedRoles, role]; // Add if checked on
+
+			// Always include "Can View"
+			if (!newRoles.includes("Can View")) {
+				newRoles = ["Can View", ...newRoles];
+			}
+
+			return { ...prev, [memberId]: newRoles };
+		});
+	};
+
+	const handleEdit = (memberId: string, currentRoles: string[]) => {
+		setEditMode(memberId);
+		setSelectedRoles((prev) => ({
+			...prev,
+			[memberId]: Array.isArray(currentRoles) ? currentRoles : [],
+		}));
+	};
+
+	const handleSave = async (memberId: string) => {
+		const rolesToSave = selectedRoles[memberId] || [];
+
+		const { error } = await supabase
+			.from("profiles")
+			.update({ role: rolesToSave }) // Assuming `role` is JSONB
+			.eq("id", memberId);
+
+		if (!error) {
+			toast.success("Roles updated successfully.");
+			setEditMode(null);
+		} else {
+			toast.error(error.message);
+		}
+	};
+
 	return (
 		<div className="p-6">
 			{/* Flex container for responsiveness */}
@@ -260,56 +310,78 @@ const TeamsPage = () => {
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											{member.display_name}
 										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											<div className="flex flex-col">
-												<label className="flex items-center text-sm text-gray-600">
-													<input
-														type="checkbox"
-														checked={member.role.includes(
-															"Can View"
-														)}
-														readOnly
-														className="form-checkbox h-4 w-4 text-indigo-600"
-													/>
-													<span className="ml-2">
-														Can View
-													</span>
-												</label>
-												<label className="flex items-center text-sm text-gray-600">
-													<input
-														type="checkbox"
-														checked={member.role.includes(
-															"Can Edit"
-														)}
-														readOnly
-														className="form-checkbox h-4 w-4 text-indigo-600"
-													/>
-													<span className="ml-2">
-														Can Edit
-													</span>
-												</label>
-												<label className="flex items-center text-sm text-gray-600">
-													<input
-														type="checkbox"
-														checked={member.role.includes(
-															"Can Approve"
-														)}
-														readOnly
-														className="form-checkbox h-4 w-4 text-indigo-600"
-													/>
-													<span className="ml-2">
-														Can Approve
-													</span>
-												</label>
+												{[
+													"Can Add",
+													"Can Edit",
+													"Can Approve",
+													"Can Assign",
+												].map((role) => (
+													<div
+														key={role}
+														className="flex items-center"
+													>
+														<input
+															type="checkbox"
+															className="mr-2"
+															checked={
+																editMode ===
+																member.id
+																	? selectedRoles[
+																			member
+																				.id
+																	  ]?.includes(
+																			role
+																	  ) || false
+																	: member.role.includes(
+																			role
+																	  )
+															}
+															disabled={
+																editMode !==
+																member.id
+															}
+															onChange={() =>
+																handleCheckboxChange(
+																	member.id,
+																	role
+																)
+															}
+														/>
+														<label>{role}</label>
+													</div>
+												))}
 											</div>
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-											<button className="text-indigo-600 hover:text-indigo-900">
-												Edit
-											</button>
-											<button className="text-red-600 hover:text-red-900 ml-4">
-												Delete
-											</button>
+											{editMode === member.id ? (
+												<button
+													className="text-green-600 hover:text-green-900"
+													onClick={() =>
+														handleSave(member.id)
+													}
+												>
+													Save
+												</button>
+											) : (
+												<>
+													<button
+														className="text-indigo-600 hover:text-indigo-900"
+														onClick={() =>
+															handleEdit(
+																member.id,
+																member.role
+															)
+														}
+													>
+														Edit
+													</button>
+													<button className="text-red-600 hover:text-red-900 ml-4">
+														Delete
+													</button>
+												</>
+											)}
 										</td>
 									</tr>
 								))}

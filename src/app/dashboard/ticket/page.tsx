@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -14,18 +15,6 @@ import { Search } from "lucide-react";
 const SearchIcon = () => {
 	return <Search width={20} height={20} />;
 };
-
-interface Ticket {
-	ticket_id: number;
-	first_name: string;
-	last_name: string;
-	email: string;
-	filer?: { name: string };
-	department?: { name: string };
-	category: string;
-	description: string;
-	priority_level?: "High" | "Moderate" | "Low";
-}
 
 const TicketPage = () => {
 	const [sortOption, setSortOption] = useState("ID");

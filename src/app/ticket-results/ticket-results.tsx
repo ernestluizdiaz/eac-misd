@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { getAIResponse } from "@/lib/gemini";
 import { supabase } from "@/lib/supabaseClient";
 import ReactMarkdown from "react-markdown";
@@ -14,7 +14,7 @@ interface Ticket {
 	description: string;
 }
 
-export default function TicketResults() {
+function TicketResultsContent() {
 	const searchParams = useSearchParams();
 	const ticketId = searchParams.get("id");
 	const [ticket, setTicket] = useState<Ticket | null>(null);
@@ -41,20 +41,19 @@ export default function TicketResults() {
 
 		fetchTicket();
 	}, [ticketId]);
+
 	const fetchAiSolution = async (description: string) => {
-		// Check for predefined descriptions
 		const predefinedResponses: { [key: string]: string } = {
 			"AIMS password forgot":
-				"Try resetting your password by clicking 'Forgot Password' on the AIMS Portal.",
+				"Try resetting your password on the AIMS Portal.",
 			"network issue":
 				"Check your internet connection or restart your router.",
 			"software installation":
 				"Wait for IT Staff before installing software.",
 			"send staff ":
-				"Your ticket is submitted, wait for the staff or department head for further assistance. Your ticket will be our first priority.",
+				"Your ticket is submitted, wait for further assistance.",
 		};
 
-		// Check if the description matches any predefined response
 		for (const keyword in predefinedResponses) {
 			if (description.toLowerCase().includes(keyword)) {
 				setAiSolution(predefinedResponses[keyword]);
@@ -62,7 +61,6 @@ export default function TicketResults() {
 			}
 		}
 
-		// If no predefined response, use AI
 		try {
 			const solution = await getAIResponse(description);
 			setAiSolution(solution);
@@ -78,14 +76,6 @@ export default function TicketResults() {
 			</p>
 		);
 
-	const formatSolution = (solution: string) => {
-		return solution
-			.replace(/\*\*(.*?)\*\*/g, "**$1**") // Bold text
-			.replace(/\n\n/g, "\n\n") // Preserve paragraph spacing
-			.replace(/- (.*?)\n/g, "- $1\n") // Keep valid Markdown bullets
-			.replace(/### (.*?)\n/g, "### $1\n") // Subheadings
-			.replace(/## (.*?)\n/g, "## $1\n"); // Headings
-	};
 	return (
 		<div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg border border-gray-200 my-10">
 			<h1 className="text-2xl font-bold text-gray-800 mb-4">
@@ -147,5 +137,15 @@ export default function TicketResults() {
 				</button>
 			</div>
 		</div>
+	);
+}
+
+export default function TicketResults() {
+	return (
+		<Suspense
+			fallback={<p className="text-center text-gray-600">Loading...</p>}
+		>
+			<TicketResultsContent />
+		</Suspense>
 	);
 }

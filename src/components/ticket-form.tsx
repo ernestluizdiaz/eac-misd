@@ -142,6 +142,7 @@ const TicketForm = () => {
 					filer_id: data.filer,
 					category: data.category,
 					description: data.description,
+					status: "Pending",
 				},
 			])
 			.select("ticket_id") // Select the inserted ticket ID

@@ -2,17 +2,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import Tickets from "@/app/dashboard/ticket/page";
 import Teams from "@/app/dashboard/teams/page";
-import Options from "@/app/dashboard/options/page";
+import Options from "@/app/dashboard/options/department";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 const DashboardNav = () => {
-	const [activeComponent, setActiveComponent] = useState("Tickets");
 	const [displayName, setDisplayName] = useState<string | null>(null);
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const sidebarRef = useRef<HTMLDivElement>(null);
+	const [activeComponent, setActiveComponent] = useState("Tickets");
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const storedComponent = localStorage.getItem("activeComponent");
+			if (storedComponent) setActiveComponent(storedComponent);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			localStorage.setItem("activeComponent", activeComponent);
+		}
+	}, [activeComponent]);
 
 	useEffect(() => {
 		const checkUser = async () => {

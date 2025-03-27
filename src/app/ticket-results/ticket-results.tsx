@@ -46,11 +46,11 @@ function TicketResultsContent() {
 		const predefinedResponses: { [key: string]: string } = {
 			"AIMS password forgot":
 				"Try resetting your password on the AIMS Portal.",
-			"network issue":
+			"Network Issue":
 				"Check your internet connection or restart your router.",
-			"software installation":
+			"Software installation at PC access denied":
 				"Wait for IT Staff before installing software.",
-			"send staff ":
+			"send support, staff, IT, or any person about support ":
 				"Your ticket is submitted, wait for further assistance.",
 		};
 

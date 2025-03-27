@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
 	Select,
@@ -26,7 +26,7 @@ const TicketPage = () => {
 
 	const fetchTickets = async () => {
 		const { data, error } = await supabase.from("tickets").select(`
-				ticket_id, first_name, last_name, email, category, description, priority_level, assign_to,
+				ticket_id, first_name, last_name, email, category, description, priority_level, assign_to, status,
 				department:department_id (name),
 				filer:filer_id (name)
 			`);
@@ -76,6 +76,9 @@ const TicketPage = () => {
 	const [selectedAssignees, setSelectedAssignees] = useState<{
 		[key: number]: string;
 	}>({});
+	const [selectedStatus, setSelectedStatus] = useState<{
+		[key: number]: string;
+	}>({});
 
 	// Toggle Edit Mode
 	const handleEdit = (ticketId: number) => {
@@ -85,6 +88,11 @@ const TicketPage = () => {
 	// Handle Priority Selection
 	const handlePriorityChange = (ticketId: number, value: string) => {
 		setSelectedPriorities((prev) => ({ ...prev, [ticketId]: value }));
+	};
+
+	// Handle Status Selection
+	const handleStatusChange = (ticketId: number, value: string) => {
+		setSelectedStatus((prev) => ({ ...prev, [ticketId]: value }));
 	};
 
 	const handleAssignChange = (ticketId: number, profileId: string) => {
@@ -132,6 +140,29 @@ const TicketPage = () => {
 		}
 
 		toast.success("Assignee updated successfully!");
+
+		// Reload the page after saving
+		setTimeout(() => {
+			window.location.reload();
+		}, 1000);
+	};
+
+	const updateStatus = async (ticketId: number) => {
+		const status = selectedStatus[ticketId]; // Get selected status
+		if (!status) return; // Prevent unnecessary update
+
+		const { error } = await supabase
+			.from("tickets")
+			.update({ status }) // Save UUID
+			.eq("ticket_id", ticketId);
+
+		if (error) {
+			console.error("Error updating status:", error);
+			toast.error("Failed to update status.");
+			return;
+		}
+
+		toast.success("Status updated successfully!");
 
 		// Reload the page after saving
 		setTimeout(() => {
@@ -269,6 +300,9 @@ const TicketPage = () => {
 										Description
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+										Status
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Priority Level
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
@@ -306,6 +340,42 @@ const TicketPage = () => {
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											{ticket.description}
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+											{editMode[ticket.ticket_id] ? (
+												<Select
+													value={
+														selectedStatus[
+															ticket.ticket_id
+														] ||
+														ticket.status ||
+														"Pending"
+													}
+													onValueChange={(value) =>
+														handleStatusChange(
+															ticket.ticket_id,
+															value
+														)
+													}
+												>
+													<SelectTrigger className="w-full">
+														<SelectValue placeholder="Select Status" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="Pending">
+															Pending
+														</SelectItem>
+														<SelectItem value="In Progress">
+															In Progress
+														</SelectItem>
+														<SelectItem value="Resolved">
+															Resolved
+														</SelectItem>
+													</SelectContent>
+												</Select>
+											) : (
+												ticket.status || "Pending"
+											)}
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											{editMode[ticket.ticket_id] ? (
@@ -411,6 +481,9 @@ const TicketPage = () => {
 																			ticket.ticket_id
 																		),
 																		updateAssignedTo(
+																			ticket.ticket_id
+																		),
+																		updateStatus(
 																			ticket.ticket_id
 																		),
 																	]

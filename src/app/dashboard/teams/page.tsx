@@ -315,7 +315,7 @@ const TeamsPage = () => {
 												{[
 													"Can Add",
 													"Can Edit",
-													"Can Approve",
+													"Can Delete",
 													"Can Assign",
 												].map((role) => (
 													<div

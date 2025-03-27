@@ -11,6 +11,15 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Search } from "lucide-react";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const SearchIcon = () => {
 	return <Search width={20} height={20} />;
@@ -67,6 +76,9 @@ const TicketPage = () => {
 	}, []);
 
 	const [editMode, setEditMode] = useState<{ [key: number]: boolean }>({});
+	const [assignMode, setAssignMode] = useState<{ [key: number]: boolean }>(
+		{}
+	);
 	const [selectedPriorities, setSelectedPriorities] = useState<{
 		[key: number]: string;
 	}>({});
@@ -83,6 +95,10 @@ const TicketPage = () => {
 	// Toggle Edit Mode
 	const handleEdit = (ticketId: number) => {
 		setEditMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
+	};
+
+	const handleAssign = (ticketId: number) => {
+		setAssignMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
 	};
 
 	// Handle Priority Selection
@@ -170,6 +186,8 @@ const TicketPage = () => {
 		}, 1000);
 	};
 
+	const [currentPage, setCurrentPage] = useState(1);
+
 	const filteredAndSortedTickets = [...tickets]
 		.filter((ticket) => {
 			const searchLower = searchTerm.toLowerCase();
@@ -195,7 +213,8 @@ const TicketPage = () => {
 					)?.display_name || ""
 				)
 					.toLowerCase()
-					.includes(searchLower) // Assigned To
+					.includes(searchLower) ||
+				(ticket.status ?? "").toLowerCase().includes(searchLower)
 			);
 		})
 		.sort((a, b) => {
@@ -230,6 +249,24 @@ const TicketPage = () => {
 						b.priority_level as keyof typeof priorityOrder
 					] || 4)
 				);
+			} else if (sortOption === "Pending") {
+				return a.status === "Pending"
+					? -1
+					: b.status === "Pending"
+					? 1
+					: 0;
+			} else if (sortOption === "In Progress") {
+				return a.status === "In Progress"
+					? -1
+					: b.status === "In Progress"
+					? 1
+					: 0;
+			} else if (sortOption === "Resolved") {
+				return a.status === "Resolved"
+					? -1
+					: b.status === "Resolved"
+					? 1
+					: 0;
 			}
 			return 0;
 		});
@@ -270,6 +307,11 @@ const TicketPage = () => {
 							<SelectItem value="Priority Level">
 								Priority Level
 							</SelectItem>
+							<SelectItem value="Pending">Pending</SelectItem>
+							<SelectItem value="In Progress">
+								In Progress
+							</SelectItem>
+							<SelectItem value="Resolved">Resolved</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -278,9 +320,7 @@ const TicketPage = () => {
 						<table className="min-w-full divide-y divide-gray-200">
 							<thead className="bg-gray-50">
 								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-										ID
-									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase"></th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Name
 									</th>
@@ -314,218 +354,328 @@ const TicketPage = () => {
 								</tr>
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
-								{filteredAndSortedTickets.map((ticket) => (
-									<tr
-										key={ticket.ticket_id}
-										className="hover:bg-gray-100"
-									>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.ticket_id}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.first_name}{" "}
-											{ticket.last_name}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.email}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.filer?.name || "N/A"}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.department?.name || "N/A"}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.category}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{ticket.description}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{editMode[ticket.ticket_id] ? (
-												<Select
-													value={
-														selectedStatus[
-															ticket.ticket_id
-														] ||
-														ticket.status ||
-														"Pending"
-													}
-													onValueChange={(value) =>
-														handleStatusChange(
-															ticket.ticket_id,
+								{filteredAndSortedTickets
+									.slice(
+										(currentPage - 1) * 10,
+										currentPage * 10
+									)
+									.map((ticket: any) => (
+										<tr
+											key={ticket.ticket_id}
+											className="hover:bg-gray-100"
+										>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{filteredAndSortedTickets.indexOf(
+													ticket
+												) + 1}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.first_name}{" "}
+												{ticket.last_name}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.email}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.filer?.name || "N/A"}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.department?.name ||
+													"N/A"}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.category}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{ticket.description}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{editMode[ticket.ticket_id] ? (
+													<Select
+														value={
+															selectedStatus[
+																ticket.ticket_id
+															] ||
+															ticket.status ||
+															"Pending"
+														}
+														onValueChange={(
 															value
-														)
-													}
-												>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Select Status" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="Pending">
-															Pending
-														</SelectItem>
-														<SelectItem value="In Progress">
-															In Progress
-														</SelectItem>
-														<SelectItem value="Resolved">
-															Resolved
-														</SelectItem>
-													</SelectContent>
-												</Select>
-											) : (
-												ticket.status || "Pending"
-											)}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{editMode[ticket.ticket_id] ? (
-												<Select
-													value={
-														selectedPriorities[
-															ticket.ticket_id
-														] ||
-														ticket.priority_level ||
-														""
-													}
-													onValueChange={(value) =>
-														handlePriorityChange(
-															ticket.ticket_id,
-															value
-														)
-													}
-												>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Select Priority Level" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="High">
-															High
-														</SelectItem>
-														<SelectItem value="Moderate">
-															Moderate
-														</SelectItem>
-														<SelectItem value="Low">
-															Low
-														</SelectItem>
-													</SelectContent>
-												</Select>
-											) : (
-												<span>
-													{ticket.priority_level ||
-														"Not Set"}
-												</span>
-											)}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-											{editMode[ticket.ticket_id] ? (
-												<Select
-													value={
-														selectedAssignees[
-															ticket.ticket_id
-														] ||
-														ticket.assign_to ||
-														""
-													}
-													onValueChange={(value) =>
-														handleAssignChange(
-															ticket.ticket_id,
-															value
-														)
-													}
-												>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Select Assignee" />
-													</SelectTrigger>
-													<SelectContent>
-														{profiles.map(
-															(profile) => (
-																<SelectItem
-																	key={
-																		profile.id
-																	}
-																	value={
-																		profile.id
-																	}
-																>
-																	{
-																		profile.display_name
-																	}
-																</SelectItem>
+														) =>
+															handleStatusChange(
+																ticket.ticket_id,
+																value
 															)
-														)}
-													</SelectContent>
-												</Select>
-											) : (
-												<span>
-													{profiles.find(
-														(p) =>
-															String(p.id) ===
-															String(
-																ticket.assign_to
+														}
+													>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="Select Status" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="Pending">
+																Pending
+															</SelectItem>
+															<SelectItem value="In Progress">
+																In Progress
+															</SelectItem>
+															<SelectItem value="Resolved">
+																Resolved
+															</SelectItem>
+														</SelectContent>
+													</Select>
+												) : (
+													ticket.status || "Pending"
+												)}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{editMode[ticket.ticket_id] ? (
+													<Select
+														value={
+															selectedPriorities[
+																ticket.ticket_id
+															] ||
+															ticket.priority_level ||
+															""
+														}
+														onValueChange={(
+															value
+														) =>
+															handlePriorityChange(
+																ticket.ticket_id,
+																value
 															)
-													)?.display_name ||
-														"Unassigned"}
-												</span>
-											)}
-										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex gap-2">
-											{editMode[ticket.ticket_id] ? (
-												<>
-													<div className="flex flex-col items-center justify-center">
-														<button
-															className="cursor-pointer font-semibold text-black hover:text-green-900"
-															onClick={async () => {
-																await Promise.all(
-																	[
-																		updatePriority(
-																			ticket.ticket_id
-																		),
-																		updateAssignedTo(
-																			ticket.ticket_id
-																		),
-																		updateStatus(
-																			ticket.ticket_id
-																		),
-																	]
-																);
-																handleEdit(
-																	ticket.ticket_id
-																); // Exit edit mode after saving
-															}}
-														>
-															Save
-														</button>
-														<button
-															className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-															onClick={() =>
-																handleEdit(
-																	ticket.ticket_id
+														}
+													>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="Select Priority Level" />
+														</SelectTrigger>
+														<SelectContent>
+															<SelectItem value="High">
+																High
+															</SelectItem>
+															<SelectItem value="Moderate">
+																Moderate
+															</SelectItem>
+															<SelectItem value="Low">
+																Low
+															</SelectItem>
+														</SelectContent>
+													</Select>
+												) : (
+													<span>
+														{ticket.priority_level ||
+															"Not Set"}
+													</span>
+												)}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												{assignMode[
+													ticket.ticket_id
+												] ? (
+													<Select
+														value={
+															selectedAssignees[
+																ticket.ticket_id
+															] ||
+															ticket.assign_to ||
+															""
+														}
+														onValueChange={(
+															value
+														) =>
+															handleAssignChange(
+																ticket.ticket_id,
+																value
+															)
+														}
+													>
+														<SelectTrigger className="w-full">
+															<SelectValue placeholder="Select Assignee" />
+														</SelectTrigger>
+														<SelectContent>
+															{profiles.map(
+																(profile) => (
+																	<SelectItem
+																		key={
+																			profile.id
+																		}
+																		value={
+																			profile.id
+																		}
+																	>
+																		{
+																			profile.display_name
+																		}
+																	</SelectItem>
 																)
-															} // Just exits edit mode
-														>
-															Cancel
-														</button>
-													</div>
-												</>
-											) : (
-												<button
-													className="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-900"
-													onClick={() =>
-														handleEdit(
-															ticket.ticket_id
-														)
-													}
-												>
-													Edit
-												</button>
-											)}
-										</td>
-									</tr>
-								))}
+															)}
+														</SelectContent>
+													</Select>
+												) : (
+													<span>
+														{profiles.find(
+															(p) =>
+																String(p.id) ===
+																String(
+																	ticket.assign_to
+																)
+														)?.display_name ||
+															"Unassigned"}
+													</span>
+												)}
+											</td>
+											<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col">
+												{editMode[ticket.ticket_id] ? (
+													<>
+														<div className="flex flex-row gap-2">
+															<button
+																className="cursor-pointer font-semibold text-black hover:text-green-900"
+																onClick={async () => {
+																	await Promise.all(
+																		[
+																			updatePriority(
+																				ticket.ticket_id
+																			),
+																			updateStatus(
+																				ticket.ticket_id
+																			),
+																		]
+																	);
+																	handleEdit(
+																		ticket.ticket_id
+																	); // Exit edit mode after saving
+																}}
+															>
+																Save
+															</button>
+															<button
+																className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																onClick={() =>
+																	handleEdit(
+																		ticket.ticket_id
+																	)
+																} // Just exits edit mode
+															>
+																Cancel
+															</button>
+														</div>
+													</>
+												) : (
+													<button
+														className="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-900"
+														onClick={() =>
+															handleEdit(
+																ticket.ticket_id
+															)
+														}
+													>
+														Edit
+													</button>
+												)}
+
+												{assignMode[
+													ticket.ticket_id
+												] ? (
+													<>
+														<div className="flex flex-row gap-2">
+															<button
+																className="cursor-pointer font-semibold text-black hover:text-green-900"
+																onClick={async () => {
+																	await updateAssignedTo(
+																		ticket.ticket_id
+																	);
+																	handleAssign(
+																		ticket.ticket_id
+																	);
+																}}
+															>
+																Save
+															</button>
+															<button
+																className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																onClick={() =>
+																	handleAssign(
+																		ticket.ticket_id
+																	)
+																}
+															>
+																Cancel
+															</button>
+														</div>
+													</>
+												) : (
+													<button
+														className="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-900"
+														onClick={() =>
+															handleAssign(
+																ticket.ticket_id
+															)
+														}
+													>
+														Assign
+													</button>
+												)}
+											</td>
+										</tr>
+									))}
 							</tbody>
 						</table>
 					</div>
 				</div>
+			</div>
+
+			<div className="flex justify-center mt-4">
+				<Pagination className="">
+					<PaginationContent className="flex gap-2">
+						<PaginationItem>
+							<PaginationPrevious
+								href="#"
+								className="px-3 py-1 bg-black text-white rounded "
+								onClick={() =>
+									setCurrentPage((prev) =>
+										Math.max(prev - 1, 1)
+									)
+								}
+							>
+								Previous
+							</PaginationPrevious>
+						</PaginationItem>
+						{Array.from(
+							{ length: Math.ceil(tickets.length / 10) },
+							(_, i) => (
+								<PaginationItem key={i}>
+									<PaginationLink
+										href="#"
+										className={`px-3 py-1 rounded ${
+											currentPage === i + 1
+												? "bg-black text-white"
+												: "bg-white  "
+										}`}
+										onClick={() => setCurrentPage(i + 1)}
+									>
+										{i + 1}
+									</PaginationLink>
+								</PaginationItem>
+							)
+						)}
+						<PaginationItem>
+							<PaginationNext
+								href="#"
+								className="px-3 py-1 bg-black text-white rounded "
+								onClick={() =>
+									setCurrentPage((prev) =>
+										Math.min(
+											prev + 1,
+											Math.ceil(tickets.length / 10)
+										)
+									)
+								}
+							>
+								Next
+							</PaginationNext>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</div>
 		</div>
 	);

@@ -39,7 +39,7 @@ const formSchema = z
 
 const TeamsPage = () => {
 	const [teamMembers, setTeamMembers] = useState<
-		{ id: string; display_name: string; role: string[] }[]
+		{ id: string; email: string; display_name: string; role: string[] }[]
 	>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -65,7 +65,11 @@ const TeamsPage = () => {
 
 		const { email, password, displayName } = data;
 
-		// Sign up the user
+		// Check if there's an active session
+		const { data: sessionData } = await supabase.auth.getSession();
+		const sessionExists = sessionData?.session;
+
+		// Sign up the new user
 		const { data: signUpData, error } = await supabase.auth.signUp({
 			email,
 			password,
@@ -79,15 +83,16 @@ const TeamsPage = () => {
 		if (error) {
 			setError(error.message);
 		} else {
-			const user = signUpData.user;
+			const newUser = signUpData.user;
 
-			if (user) {
-				// Add user to the profiles table with default role "Can View"
+			if (newUser) {
+				// Insert user into the profiles table
 				const { error: profileError } = await supabase
 					.from("profiles")
 					.insert([
 						{
-							id: user.id, // Use the user's UUID
+							id: newUser.id, // Use the new user's UUID
+							email: newUser.email,
 							display_name: displayName,
 							role: ["Can View"], // Default role
 						},
@@ -97,9 +102,20 @@ const TeamsPage = () => {
 					setError(profileError.message);
 				} else {
 					toast.success("Your account has been created.");
+
+					// If a session exists, log out the newly created user while keeping the current user active
+					if (sessionExists) {
+						await supabase.auth.signOut(); // Logs out the latest signed-in user
+
+						// Re-authenticate the original session
+						await supabase.auth.setSession({
+							access_token: sessionExists.access_token,
+							refresh_token: sessionExists.refresh_token,
+						});
+					}
+
 					setTimeout(() => {
 						form.reset(); // Reset form after submission
-						window.location.reload(); // Reload the page
 					}, 2000);
 				}
 			}
@@ -112,7 +128,7 @@ const TeamsPage = () => {
 		const fetchTeamMembers = async () => {
 			const { data, error } = await supabase
 				.from("profiles")
-				.select("id, display_name, role");
+				.select("id, display_name, role, email");
 
 			if (error) {
 				setError(error.message);
@@ -170,10 +186,45 @@ const TeamsPage = () => {
 		if (!error) {
 			toast.success("Roles updated successfully.");
 			setEditMode(null);
+			setTimeout(() => {
+				window.location.reload();
+			}, 1000);
 		} else {
 			toast.error(error.message);
 		}
 	};
+
+	const [userRoles, setUserRoles] = React.useState<string[]>([]);
+
+	React.useEffect(() => {
+		const fetchUserRoles = async () => {
+			const { data: user, error: authError } =
+				await supabase.auth.getUser();
+			if (authError || !user?.user) return;
+
+			const { data, error } = await supabase
+				.from("profiles")
+				.select("role")
+				.eq("id", user.user.id)
+				.maybeSingle();
+
+			if (error) {
+				toast.error("Error fetching roles: " + error.message);
+				return;
+			}
+
+			console.log("Fetched user roles:", data?.role); // Debugging
+
+			// Directly use data.role since it's already an array
+			if (data?.role && Array.isArray(data.role)) {
+				setUserRoles(data.role);
+			} else {
+				setUserRoles([]); // Fallback to empty array
+			}
+		};
+
+		fetchUserRoles();
+	}, []);
 
 	return (
 		<div className="p-6">
@@ -260,13 +311,22 @@ const TeamsPage = () => {
 									)}
 								/>
 								{/* Submit Button */}
-								<div className="">
+								<div className="cursor-not-allowed">
 									<Button
-										className="w-full"
+										className={`${
+											userRoles.includes("Can Add")
+												? "cursor-pointer w-full "
+												: "opacity-50 cursor-not-allowed w-full "
+										}`}
 										type="submit"
-										disabled={loading}
+										disabled={
+											loading ||
+											!userRoles.includes("Can Add")
+										}
 									>
-										{loading ? "Registering..." : "Submit"}
+										{loading
+											? "Registering..."
+											: "Add Account"}
 									</Button>
 								</div>
 							</form>
@@ -294,7 +354,10 @@ const TeamsPage = () => {
 										Member Name
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-										Role
+										Email
+									</th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+										Access Roles
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 										Actions
@@ -309,6 +372,9 @@ const TeamsPage = () => {
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											{member.display_name}
+										</td>
+										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+											{member.email}
 										</td>
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											<div className="flex flex-col">
@@ -354,7 +420,7 @@ const TeamsPage = () => {
 												))}
 											</div>
 										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
 											{editMode === member.id ? (
 												<button
 													className="text-green-600 hover:text-green-900"
@@ -367,17 +433,47 @@ const TeamsPage = () => {
 											) : (
 												<>
 													<button
-														className="text-indigo-600 hover:text-indigo-900"
-														onClick={() =>
+														className={`text-indigo-600 ${
+															userRoles.includes(
+																"Can Edit"
+															)
+																? "hover:text-indigo-900"
+																: "opacity-50 cursor-not-allowed"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Edit"
+															)
+														}
+														onClick={() => {
+															if (
+																userRoles.includes(
+																	"Can Edit"
+																)
+															) {
+															}
 															handleEdit(
 																member.id,
 																member.role
-															)
-														}
+															);
+														}}
 													>
 														Edit
 													</button>
-													<button className="text-red-600 hover:text-red-900 ml-4">
+													<button
+														className={`text-red-600 ${
+															userRoles.includes(
+																"Can Delete"
+															)
+																? "hover:text-red-900"
+																: "opacity-50 cursor-not-allowed"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Delete"
+															)
+														}
+													>
 														Delete
 													</button>
 												</>

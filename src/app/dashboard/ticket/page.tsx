@@ -14,7 +14,6 @@ import { Search } from "lucide-react";
 import {
 	Pagination,
 	PaginationContent,
-	PaginationEllipsis,
 	PaginationItem,
 	PaginationLink,
 	PaginationNext,
@@ -270,6 +269,38 @@ const TicketPage = () => {
 			}
 			return 0;
 		});
+
+	const [userRoles, setUserRoles] = React.useState<string[]>([]);
+
+	React.useEffect(() => {
+		const fetchUserRoles = async () => {
+			const { data: user, error: authError } =
+				await supabase.auth.getUser();
+			if (authError || !user?.user) return;
+
+			const { data, error } = await supabase
+				.from("profiles")
+				.select("role")
+				.eq("id", user.user.id)
+				.maybeSingle();
+
+			if (error) {
+				toast.error("Error fetching roles: " + error.message);
+				return;
+			}
+
+			console.log("Fetched user roles:", data?.role); // Debugging
+
+			// Directly use data.role since it's already an array
+			if (data?.role && Array.isArray(data.role)) {
+				setUserRoles(data.role);
+			} else {
+				setUserRoles([]); // Fallback to empty array
+			}
+		};
+
+		fetchUserRoles();
+	}, []);
 
 	return (
 		<div>
@@ -562,12 +593,29 @@ const TicketPage = () => {
 													</>
 												) : (
 													<button
-														className="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-900"
-														onClick={() =>
-															handleEdit(
-																ticket.ticket_id
+														className={`text-indigo-600 ${
+															userRoles.includes(
+																"Can Edit"
+															)
+																? "hover:text-indigo-900 font-semibold"
+																: "opacity-50 cursor-not-allowed font-semibold"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Edit"
 															)
 														}
+														onClick={() => {
+															if (
+																userRoles.includes(
+																	"Can Edit"
+																)
+															) {
+															}
+															handleEdit(
+																ticket.ticket_id
+															);
+														}}
 													>
 														Edit
 													</button>
@@ -605,12 +653,28 @@ const TicketPage = () => {
 													</>
 												) : (
 													<button
-														className="cursor-pointer font-semibold text-indigo-600 hover:text-indigo-900"
-														onClick={() =>
-															handleAssign(
-																ticket.ticket_id
+														className={`text-indigo-600 ${
+															userRoles.includes(
+																"Can Assign"
+															)
+																? "hover:text-indigo-900 font-semibold"
+																: "opacity-50 cursor-not-allowed font-semibold"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Assign"
 															)
 														}
+														onClick={() => {
+															if (
+																userRoles.includes(
+																	"Can Assign"
+																)
+															)
+																handleAssign(
+																	ticket.ticket_id
+																);
+														}}
 													>
 														Assign
 													</button>

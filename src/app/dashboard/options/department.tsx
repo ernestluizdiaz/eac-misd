@@ -139,6 +139,38 @@ const Department = () => {
 		}
 	};
 
+	const [userRoles, setUserRoles] = React.useState<string[]>([]);
+
+	React.useEffect(() => {
+		const fetchUserRoles = async () => {
+			const { data: user, error: authError } =
+				await supabase.auth.getUser();
+			if (authError || !user?.user) return;
+
+			const { data, error } = await supabase
+				.from("profiles")
+				.select("role")
+				.eq("id", user.user.id)
+				.maybeSingle();
+
+			if (error) {
+				toast.error("Error fetching roles: " + error.message);
+				return;
+			}
+
+			console.log("Fetched user roles:", data?.role); // Debugging
+
+			// Directly use data.role since it's already an array
+			if (data?.role && Array.isArray(data.role)) {
+				setUserRoles(data.role);
+			} else {
+				setUserRoles([]); // Fallback to empty array
+			}
+		};
+
+		fetchUserRoles();
+	}, []);
+
 	return (
 		<div className="p-6">
 			{/* Flex container for responsiveness */}
@@ -175,8 +207,18 @@ const Department = () => {
 										</FormItem>
 									)}
 								/>
-								<div className="flex justify-end">
-									<Button type="submit">
+								<div className="flex justify-end cursor-not-allowed">
+									<Button
+										type="submit"
+										disabled={
+											!userRoles.includes("Can Add")
+										}
+										className={`${
+											userRoles.includes("Can Add")
+												? "cursor-pointer "
+												: "opacity-50 cursor-not-allowed "
+										}`}
+									>
 										Add Department
 									</Button>
 								</div>
@@ -214,12 +256,31 @@ const Department = () => {
 											<Dialog>
 												<DialogTrigger asChild>
 													<button
-														className="text-indigo-600 hover:text-indigo-900"
+														className={`text-indigo-600 ml-4 ${
+															userRoles.includes(
+																"Can Edit"
+															)
+																? "hover:text-indigo-900"
+																: "opacity-50 cursor-not-allowed"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Edit"
+															)
+														}
 														onClick={() => {
-															setSelectedDepartment(
-																department
-															);
-															setIsEditing(true);
+															if (
+																userRoles.includes(
+																	"Can Edit"
+																)
+															) {
+																setSelectedDepartment(
+																	department
+																);
+																setIsEditing(
+																	true
+																);
+															}
 														}}
 													>
 														Edit
@@ -272,7 +333,20 @@ const Department = () => {
 
 											<Dialog>
 												<DialogTrigger asChild>
-													<button className="text-red-600 hover:text-red-900 ml-4">
+													<button
+														className={`text-red-600 ml-4 ${
+															userRoles.includes(
+																"Can Delete"
+															)
+																? "hover:text-red-900"
+																: "opacity-50 cursor-not-allowed"
+														}`}
+														disabled={
+															!userRoles.includes(
+																"Can Delete"
+															)
+														}
+													>
 														Delete
 													</button>
 												</DialogTrigger>

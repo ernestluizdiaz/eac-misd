@@ -359,7 +359,7 @@ const TicketPage = () => {
 										Email Address
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-										Submit By
+										Role
 									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Department

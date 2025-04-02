@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useRouter } from "next/navigation"; // Next.js router import
+import { getAIResponse } from "@/lib/gemini";
 
 const formSchema = z.object({
 	firstName: z.string().min(2, {
@@ -131,32 +132,55 @@ const TicketForm = () => {
 		category: string;
 		description: string;
 	}) => {
-		const { data: insertedTicket, error } = await supabase
-			.from("tickets")
-			.insert([
-				{
-					first_name: data.firstName,
-					last_name: data.lastName,
-					email: data.email,
-					department_id: data.department, // Ensure this is the ID, not the name
-					filer_id: data.filer,
-					category: data.category,
-					description: data.description,
-					status: "Pending",
-				},
-			])
-			.select("ticket_id") // Select the inserted ticket ID
-			.single();
+		try {
+			// Get priority suggestion from AI
+			const priority_level = await getAIResponse(
+				`Classify the following issue into High, Moderate, or Low priority.
+	
+				Description: "${data.description}"
+				
+				Criteria:
+				- **High**: Includes words like "system down", "critical", "urgent", "request IT support", "request  assistance"
+				- **Moderate**: Includes words like "slow performance", "intermittent connection", "forgot password"
+				- **Moderate**: "slow performance", "intermittent connection", "forgot password"
+				- **Low**: General inquiries like "questions about schedule", "minor issue, slow internet connection"
+	
+				Return only "High", "Moderate", or "Low".`
+			);
 
-		if (error) {
-			console.error("Error inserting ticket:", error.message);
-			return;
+			console.log("AI Suggested Priority:", priority_level);
+
+			// Insert into Supabase with AI-determined priority
+			const { data: insertedTicket, error } = await supabase
+				.from("tickets")
+				.insert([
+					{
+						first_name: data.firstName,
+						last_name: data.lastName,
+						email: data.email,
+						department_id: data.department, // Ensure this is the ID, not the name
+						filer_id: data.filer,
+						category: data.category,
+						description: data.description,
+						status: "Pending",
+						priority_level: priority_level.trim(), // Ensure AI response is clean
+					},
+				])
+				.select("ticket_id")
+				.single();
+
+			if (error) {
+				console.error("Error inserting ticket:", error.message);
+				return;
+			}
+
+			console.log("Ticket inserted successfully", insertedTicket);
+
+			// Redirect to the results page with ticket ID
+			router.push(`/ticket-results?id=${insertedTicket.ticket_id}`);
+		} catch (err) {
+			console.error("Error analyzing priority:", err);
 		}
-
-		console.log("Ticket inserted successfully", insertedTicket);
-
-		// Redirect to the results page with ticket ID
-		router.push(`/ticket-results?id=${insertedTicket.ticket_id}`);
 	};
 
 	return (

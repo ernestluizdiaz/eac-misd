@@ -20,6 +20,28 @@ import {
 	PaginationPrevious,
 } from "@/components/ui/pagination";
 
+interface Department {
+	name: string;
+}
+
+interface Filer {
+	name: string;
+}
+
+interface Ticket {
+	ticket_id: number;
+	first_name: string;
+	last_name: string;
+	email: string;
+	category: string;
+	description: string;
+	priority_level: string;
+	assign_to: string;
+	status: string;
+	department?: Department; // Optional in case it's null
+	filer?: Filer; // Optional in case it's null
+}
+
 const SearchIcon = () => {
 	return <Search width={20} height={20} />;
 };
@@ -143,6 +165,39 @@ const TicketPage = () => {
 		const assignToId = selectedAssignees[ticketId]; // Get selected profile ID
 		if (!assignToId) return; // Prevent unnecessary update
 
+		// Fetch assignee's email from the profiles table
+		const { data: assignee, error: assigneeError } = await supabase
+			.from("profiles")
+			.select("display_name, email")
+			.eq("id", assignToId)
+			.single();
+
+		if (assigneeError || !assignee) {
+			console.error("Error fetching assignee:", assigneeError);
+			toast.error("Failed to fetch assignee details.");
+			return;
+		}
+
+		// Fetch the ticket details to include in the email
+		const { data: ticket, error: ticketError } = await supabase
+			.from("tickets")
+			.select(
+				`
+				ticket_id, first_name, last_name, email, category, description, priority_level, assign_to, status,
+				department:department_id (name),
+				filer:filer_id (name)
+			`
+			)
+			.eq("ticket_id", ticketId)
+			.single<Ticket>();
+
+		if (ticketError || !ticket) {
+			console.error("Error fetching ticket:", ticketError);
+			toast.error("Failed to fetch ticket details.");
+			return;
+		}
+
+		// Update the ticket assignment in Supabase
 		const { error } = await supabase
 			.from("tickets")
 			.update({ assign_to: assignToId }) // Save UUID
@@ -156,6 +211,84 @@ const TicketPage = () => {
 
 		toast.success("Assignee updated successfully!");
 
+		// Prepare the email content
+		const emailHTML = `
+			<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+				<h2 style="color: #007bff;">You have been assigned a new support ticket</h2>
+				<p>Hello ${assignee.display_name},</p>
+				<p>You have been assigned to a new support ticket. Please find the details below:</p>
+	
+				<table style="width: 100%; border-collapse: collapse;">
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ticket ID</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${ticket.ticket_id}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Name</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${ticket.first_name} ${
+			ticket.last_name
+		}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${ticket.category}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${ticket.description}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Department</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${
+							ticket.department?.name
+						}</td>
+								
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Submitter</td>
+						<td style="padding: 8px; border: 1px solid #ddd;">${ticket.filer?.name}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority Level</td>
+						<td style="padding: 8px; border: 1px solid #ddd; color: ${
+							ticket.priority_level === "High"
+								? "red"
+								: ticket.priority_level === "Moderate"
+								? "orange"
+								: ticket.priority_level === "Low"
+								? "#BA8E23"
+								: "black"
+						}; font-weight: bold;">${ticket.priority_level}</td>
+					</tr>
+					<tr>
+						<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td>
+						<td style="padding: 8px; border: 1px solid #ddd; color: ${
+							ticket.status === "Resolved"
+								? "green"
+								: ticket.status === "In Progress"
+								? "orange"
+								: ticket.status === "Pending"
+								? "#BA8E23"
+								: "black"
+						}; font-weight: bold;">${ticket.status}</td>
+					</tr>
+				</table>
+	
+				<p style="margin-top: 20px;">Thank you,<br><strong>Support Team</strong></p>
+			</div>
+		`;
+
+		// Send email notification to the assignee
+		await fetch("/api/send-email", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				to: assignee.email,
+				subject: `New Ticket Assigned: #${ticket.ticket_id}`,
+				html: emailHTML, // Sending HTML email
+			}),
+		});
+
 		// Reload the page after saving
 		setTimeout(() => {
 			window.location.reload();
@@ -166,9 +299,25 @@ const TicketPage = () => {
 		const status = selectedStatus[ticketId]; // Get selected status
 		if (!status) return; // Prevent unnecessary update
 
+		// Fetch the ticket details to get the user's email
+		const { data: ticket, error: fetchError } = await supabase
+			.from("tickets")
+			.select(
+				"first_name, last_name, email, category, description, priority_level, status"
+			)
+			.eq("ticket_id", ticketId)
+			.single();
+
+		if (fetchError) {
+			console.error("Error fetching ticket:", fetchError);
+			toast.error("Failed to fetch ticket details.");
+			return;
+		}
+
+		// Update the ticket status in Supabase
 		const { error } = await supabase
 			.from("tickets")
-			.update({ status }) // Save UUID
+			.update({ status })
 			.eq("ticket_id", ticketId);
 
 		if (error) {
@@ -178,6 +327,63 @@ const TicketPage = () => {
 		}
 
 		toast.success("Status updated successfully!");
+
+		if (status === "In Progress" || status === "Resolved") {
+			const emailHTML = `
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+					<h2 style="color: #007bff;">Support Ticket Status Updated</h2>
+					<p>Hello ${ticket.first_name},</p>
+					<p>Your support ticket status has been updated. Please find the details below:</p>
+	
+					<table style="width: 100%; border-collapse: collapse;">
+						<tr>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Name</td>
+							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.first_name} ${
+				ticket.last_name
+			}</td>
+						</tr>
+						<tr>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td>
+							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.category}</td>
+						</tr>
+						<tr>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td>
+							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.description}</td>
+						</tr>
+						<tr>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority Level</td>
+							<td style="padding: 8px; border: 1px solid #ddd; color: ${
+								ticket.priority_level === "High"
+									? "red"
+									: ticket.priority_level === "Moderate"
+									? "orange"
+									: ticket.priority_level === "Low"
+									? "#BA8E23"
+									: "black"
+							}; font-weight: bold;">${ticket.priority_level}</td>
+						</tr>
+						<tr>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td>
+							<td style="padding: 8px; border: 1px solid #ddd; color: ${
+								status === "Resolved" ? "green" : "orange"
+							}; font-weight: bold;">${status}</td>
+						</tr>
+					</table>
+	
+					<p style="margin-top: 20px;">Thank you,<br><strong>Support Team</strong></p>
+				</div>
+			`;
+
+			await fetch("/api/send-email", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					to: ticket.email,
+					subject: `Ticket Status Updated: ${status}`,
+					html: emailHTML, // Sending HTML instead of text
+				}),
+			});
+		}
 
 		// Reload the page after saving
 		setTimeout(() => {
@@ -288,8 +494,6 @@ const TicketPage = () => {
 				toast.error("Error fetching roles: " + error.message);
 				return;
 			}
-
-			console.log("Fetched user roles:", data?.role); // Debugging
 
 			// Directly use data.role since it's already an array
 			if (data?.role && Array.isArray(data.role)) {

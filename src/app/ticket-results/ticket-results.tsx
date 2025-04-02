@@ -16,7 +16,7 @@ interface Ticket {
 
 function TicketResultsContent() {
 	const searchParams = useSearchParams();
-	const ticketId = searchParams.get("id");
+	const ticketId = searchParams ? searchParams.get("id") : null;
 	const [ticket, setTicket] = useState<Ticket | null>(null);
 	const [aiSolution, setAiSolution] = useState<string>("");
 

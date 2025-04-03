@@ -73,9 +73,9 @@ const Nav = () => {
 						</li>
 						<li>
 							<Link
-								href="/track"
+								href="/track-tickets"
 								className={`block py-2 px-3 rounded-sm md:p-0 ${
-									pathname === "/track"
+									pathname === "/track-tickets"
 										? "text-red-700"
 										: "text-black"
 								}`}

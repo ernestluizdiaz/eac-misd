@@ -18,6 +18,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
+	DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabaseClient";
@@ -328,9 +329,16 @@ const Filer = () => {
 												this filer?
 											</p>
 											<div className="flex justify-end space-x-4">
-												<Button variant="secondary">
-													Cancel
-												</Button>
+												<DialogClose asChild>
+													<Button
+														variant="secondary"
+														onClick={() =>
+															setIsEditing(false)
+														}
+													>
+														Cancel
+													</Button>
+												</DialogClose>
 												<Button
 													variant="destructive"
 													onClick={() =>

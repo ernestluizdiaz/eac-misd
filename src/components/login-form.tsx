@@ -100,14 +100,14 @@ export function LoginForm({
 											}
 											required
 										/>
-										<div className="flex items-center justify-between">
+										{/* <div className="flex items-center justify-between">
 											<a
 												href="#"
 												className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
 											>
-												Forgot your password?
+												Forgot password?
 											</a>
-										</div>
+										</div> */}
 									</div>
 									{error && (
 										<p className="text-red-500 text-sm">
@@ -128,7 +128,7 @@ export function LoginForm({
 										</Button>
 									</div>
 								</div>
-								<div className="mt-4 text-center text-sm">
+								{/* <div className="mt-4 text-center text-sm">
 									Don&apos;t have an account?{" "}
 									<Link
 										href="/register"
@@ -136,7 +136,7 @@ export function LoginForm({
 									>
 										Sign up
 									</Link>
-								</div>
+								</div> */}
 							</form>
 						</CardContent>
 					</Card>

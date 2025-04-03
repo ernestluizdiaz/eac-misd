@@ -12,6 +12,14 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+	DialogClose,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -225,6 +233,38 @@ const TeamsPage = () => {
 
 		fetchUserRoles();
 	}, []);
+
+	const handleDelete = async (memberId: string) => {
+		if (!userRoles.includes("Can Delete")) {
+			toast.error("You do not have permission to delete users.");
+			return;
+		}
+
+		// Unassign tickets instead of deleting them
+		const { error: updateError } = await supabase
+			.from("tickets")
+			.update({ assign_to: null })
+			.eq("assign_to", memberId);
+
+		if (updateError) {
+			toast.error("Failed to update tickets: " + updateError.message);
+			return;
+		}
+
+		// Now delete the user
+		const { error: userError } = await supabase
+			.from("profiles")
+			.delete()
+			.eq("id", memberId);
+		if (userError) {
+			toast.error("Failed to delete user: " + userError.message);
+		} else {
+			toast.success("User deleted successfully.");
+			setTeamMembers((prev) =>
+				prev.filter((member) => member.id !== memberId)
+			);
+		}
+	};
 
 	return (
 		<div className="p-6">
@@ -460,22 +500,59 @@ const TeamsPage = () => {
 													>
 														Edit
 													</button>
-													<button
-														className={`text-red-600 ${
-															userRoles.includes(
-																"Can Delete"
-															)
-																? "hover:text-red-900"
-																: "opacity-50 cursor-not-allowed"
-														}`}
-														disabled={
-															!userRoles.includes(
-																"Can Delete"
-															)
-														}
-													>
-														Delete
-													</button>
+													<Dialog>
+														<DialogTrigger asChild>
+															<button
+																className={`text-red-600 ${
+																	userRoles.includes(
+																		"Can Delete"
+																	)
+																		? "hover:text-red-900"
+																		: "opacity-50 cursor-not-allowed"
+																}`}
+																disabled={
+																	!userRoles.includes(
+																		"Can Delete"
+																	)
+																}
+															>
+																Delete
+															</button>
+														</DialogTrigger>
+
+														<DialogContent>
+															<DialogHeader>
+																<DialogTitle>
+																	Confirm
+																	Deletion
+																</DialogTitle>
+															</DialogHeader>
+															<p>
+																Are you sure you
+																want to delete
+																this member?
+															</p>
+															<div className="flex justify-end space-x-4">
+																<DialogClose
+																	asChild
+																>
+																	<Button variant="secondary">
+																		Cancel
+																	</Button>
+																</DialogClose>
+																<Button
+																	variant="destructive"
+																	onClick={() =>
+																		handleDelete(
+																			member.id
+																		)
+																	} // Keep the same delete function here
+																>
+																	Delete
+																</Button>
+															</div>
+														</DialogContent>
+													</Dialog>
 												</>
 											)}
 										</td>

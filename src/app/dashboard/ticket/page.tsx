@@ -19,6 +19,16 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Department {
 	name: string;
@@ -119,6 +129,12 @@ const TicketPage = () => {
 		[key: number]: string;
 	}>({});
 
+	const [resolutionProof, setResolutionProof] = useState<{
+		[key: number]: string;
+	}>({});
+	const [isProofDialogOpen, setIsProofDialogOpen] = useState(false);
+	const [currentTicketId, setCurrentTicketId] = useState<number | null>(null);
+
 	// Toggle Edit Mode
 	const handlePriority = (ticketId: number) => {
 		setPriorityMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
@@ -139,9 +155,40 @@ const TicketPage = () => {
 
 	// Handle Status Selection
 	const handleStatusChange = (ticketId: number, value: string) => {
-		setSelectedStatus((prev) => ({ ...prev, [ticketId]: value }));
+		if (value === "Resolved") {
+			setCurrentTicketId(ticketId);
+			setIsProofDialogOpen(true);
+		} else {
+			// Only update the local state, do not call updateStatus yet
+			setSelectedStatus((prev) => ({ ...prev, [ticketId]: value }));
+		}
 	};
 
+	const handleProofSubmit = () => {
+		if (currentTicketId !== null && resolutionProof[currentTicketId]) {
+			// Save the status with proof
+			setSelectedStatus((prev) => ({
+				...prev,
+				[currentTicketId]: "Resolved",
+			}));
+
+			// Update ticket with proof and resolved timestamp
+			updateStatus(
+				currentTicketId,
+				"Resolved",
+				resolutionProof[currentTicketId]
+			);
+
+			setIsProofDialogOpen(false);
+		}
+	};
+
+	const handleProofCancel = () => {
+		// Reset to previous status if user cancels
+		setIsProofDialogOpen(false);
+	};
+
+	// Handle Resolution Proof
 	const handleAssignChange = (ticketId: number, profileId: string) => {
 		setSelectedAssignees((prev) => ({ ...prev, [ticketId]: profileId }));
 	};
@@ -305,15 +352,27 @@ const TicketPage = () => {
 		}, 1000);
 	};
 
-	const updateStatus = async (ticketId: number) => {
-		const status = selectedStatus[ticketId]; // Get selected status
+	const updateStatus = async (
+		ticketId: number,
+		status: string,
+		proof?: string
+	) => {
 		if (!status) return; // Prevent unnecessary update
+
+		const now = new Date().toISOString();
+		const updateData: any = { status };
+
+		// If status is Resolved, add proof and resolved_at timestamp
+		if (status === "Resolved" && proof) {
+			updateData.proof = proof;
+			updateData.resolved_at = now;
+		}
 
 		// Fetch the ticket details to get the user's email
 		const { data: ticket, error: fetchError } = await supabase
 			.from("tickets")
 			.select(
-				"first_name, last_name, email, category, description, priority_level, status"
+				"first_name, last_name, email, category, description, priority_level, status, created_at, resolved_at, proof"
 			)
 			.eq("ticket_id", ticketId)
 			.single();
@@ -324,10 +383,10 @@ const TicketPage = () => {
 			return;
 		}
 
-		// Update the ticket status in Supabase
+		// Update the ticket in Supabase
 		const { error } = await supabase
 			.from("tickets")
-			.update({ status })
+			.update(updateData)
 			.eq("ticket_id", ticketId);
 
 		if (error) {
@@ -339,50 +398,82 @@ const TicketPage = () => {
 		toast.success("Status updated successfully!");
 
 		if (status === "In Progress" || status === "Resolved") {
-			const emailHTML = `
-				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-					<h2 style="color: #007bff;">Support Ticket Status Updated</h2>
-					<p>Hello ${ticket.first_name},</p>
-					<p>Your support ticket status has been updated. Please find the details below:</p>
-	
-					<table style="width: 100%; border-collapse: collapse;">
+			// Create email content
+			let emailHTML = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #007bff;">Support Ticket Status Updated</h2>
+          <p>Hello ${ticket.first_name},</p>
+          <p>Your support ticket status has been updated. Please find the details below:</p>
+
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Name</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${
+					ticket.first_name
+				} ${ticket.last_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${
+					ticket.category
+				}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${
+					ticket.description
+				}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority Level</td>
+              <td style="padding: 8px; border: 1px solid #ddd; color: ${
+					ticket.priority_level === "High"
+						? "red"
+						: ticket.priority_level === "Moderate"
+						? "orange"
+						: ticket.priority_level === "Low"
+						? "#BA8E23"
+						: "black"
+				}; font-weight: bold;">${ticket.priority_level}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td>
+              <td style="padding: 8px; border: 1px solid #ddd; color: ${
+					status === "Resolved" ? "green" : "orange"
+				}; font-weight: bold;">${status}</td>
+            </tr>
 						<tr>
-							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Name</td>
-							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.first_name} ${
-				ticket.last_name
-			}</td>
+							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Created At</td>
+							<td style="padding: 8px; border: 1px solid #ddd;">${new Date(
+								ticket.created_at
+							).toLocaleString()}</td>
 						</tr>
-						<tr>
-							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Category</td>
-							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.category}</td>
-						</tr>
-						<tr>
-							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Description</td>
-							<td style="padding: 8px; border: 1px solid #ddd;">${ticket.description}</td>
-						</tr>
-						<tr>
-							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Priority Level</td>
-							<td style="padding: 8px; border: 1px solid #ddd; color: ${
-								ticket.priority_level === "High"
-									? "red"
-									: ticket.priority_level === "Moderate"
-									? "orange"
-									: ticket.priority_level === "Low"
-									? "#BA8E23"
-									: "black"
-							}; font-weight: bold;">${ticket.priority_level}</td>
-						</tr>
-						<tr>
-							<td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Status</td>
-							<td style="padding: 8px; border: 1px solid #ddd; color: ${
-								status === "Resolved" ? "green" : "orange"
-							}; font-weight: bold;">${status}</td>
-						</tr>
-					</table>
-	
-					<p style="margin-top: 20px;">Thank you,<br><strong>Support Team</strong></p>
-				</div>
-			`;
+      `;
+
+			// Add resolution details if status is Resolved
+			if (status === "Resolved") {
+				const resolvedDate = new Date(
+					updateData.resolved_at
+				).toLocaleString();
+				emailHTML += `
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resolution Details</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${updateData.proof}</td>
+            </tr>
+						 <tr>
+              <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Resolved At</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${resolvedDate}</td>
+            </tr>
+        `;
+			}
+
+			// Close the table and complete the email
+			emailHTML += `
+          </table>
+
+          <p style="margin-top: 20px;">Thank you,<br><strong>Support Team</strong></p>
+        </div>
+      `;
 
 			await fetch("/api/send-email", {
 				method: "POST",
@@ -390,7 +481,7 @@ const TicketPage = () => {
 				body: JSON.stringify({
 					to: ticket.email,
 					subject: `Ticket Status Updated: ${status}`,
-					html: emailHTML, // Sending HTML instead of text
+					html: emailHTML,
 				}),
 			});
 		}
@@ -555,7 +646,9 @@ const TicketPage = () => {
 						<table className="min-w-full divide-y divide-gray-200">
 							<thead className="bg-gray-50">
 								<tr>
-									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase"></th>
+									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+										Ticket No.
+									</th>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Name
 									</th>
@@ -611,9 +704,9 @@ const TicketPage = () => {
 												className="hover:bg-gray-100"
 											>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-													{filteredAndSortedTickets.indexOf(
-														ticket
-													) + 1}
+													{ticket.ticket_id
+														.toString()
+														.padStart(3, "0")}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 													{ticket.first_name}{" "}
@@ -636,6 +729,8 @@ const TicketPage = () => {
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 													{ticket.description}
 												</td>
+
+												{/* Your existing table cell with status dropdown */}
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 													{statusMode[
 														ticket.ticket_id
@@ -678,6 +773,96 @@ const TicketPage = () => {
 														"Pending"
 													)}
 												</td>
+
+												{/* Resolution Proof Dialog */}
+												<Dialog
+													open={isProofDialogOpen}
+													onOpenChange={
+														setIsProofDialogOpen
+													}
+												>
+													<DialogContent>
+														<DialogHeader>
+															<DialogTitle>
+																Resolution Proof
+																Required
+															</DialogTitle>
+															<DialogDescription>
+																Please provide
+																proof of
+																resolution for
+																this ticket.
+																This information
+																will be shared
+																with the
+																customer.
+															</DialogDescription>
+														</DialogHeader>
+
+														<div className="py-4">
+															<Textarea
+																placeholder="Enter detailed resolution proof here..."
+																className="min-h-[150px]"
+																value={
+																	currentTicketId
+																		? resolutionProof[
+																				currentTicketId
+																		  ] ||
+																		  ""
+																		: ""
+																}
+																onChange={(
+																	e
+																) => {
+																	if (
+																		currentTicketId !==
+																		null
+																	) {
+																		setResolutionProof(
+																			(
+																				prev
+																			) => ({
+																				...prev,
+																				[currentTicketId]:
+																					e
+																						.target
+																						.value,
+																			})
+																		);
+																	}
+																}}
+															/>
+														</div>
+
+														<DialogFooter>
+															<Button
+																variant="outline"
+																onClick={
+																	handleProofCancel
+																}
+															>
+																Cancel
+															</Button>
+															<Button
+																onClick={
+																	handleProofSubmit
+																}
+																disabled={
+																	currentTicketId ===
+																		null ||
+																	!resolutionProof[
+																		currentTicketId ||
+																			0
+																	]?.trim()
+																}
+															>
+																Submit
+																Resolution
+															</Button>
+														</DialogFooter>
+													</DialogContent>
+												</Dialog>
+
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 													{priorityMode[
 														ticket.ticket_id
@@ -792,11 +977,20 @@ const TicketPage = () => {
 																<button
 																	className="cursor-pointer font-semibold text-black hover:text-green-900"
 																	onClick={async () => {
-																		await [
-																			updateStatus(
-																				ticket.ticket_id
-																			),
-																		];
+																		if (
+																			selectedStatus[
+																				ticket
+																					.ticket_id
+																			]
+																		) {
+																			await updateStatus(
+																				ticket.ticket_id,
+																				selectedStatus[
+																					ticket
+																						.ticket_id
+																				]
+																			);
+																		}
 																		handleStatus(
 																			ticket.ticket_id
 																		); // Exit edit mode after saving
@@ -817,33 +1011,36 @@ const TicketPage = () => {
 															</div>
 														</>
 													) : (
-														<button
-															className={`text-indigo-600 ${
-																userRoles.includes(
-																	"Can Edit Status"
-																)
-																	? "hover:text-indigo-900 font-semibold"
-																	: "opacity-50 cursor-not-allowed font-semibold"
-															}`}
-															disabled={
-																!userRoles.includes(
-																	"Can Edit Status"
-																)
-															}
-															onClick={() => {
-																if (
+														ticket.status !==
+															"Resolved" && ( // Hide button if ticket is resolved
+															<button
+																className={`text-indigo-600 ${
 																	userRoles.includes(
 																		"Can Edit Status"
 																	)
-																) {
+																		? "hover:text-indigo-900 font-semibold"
+																		: "opacity-50 cursor-not-allowed font-semibold"
+																}`}
+																disabled={
+																	!userRoles.includes(
+																		"Can Edit Status"
+																	)
 																}
-																handleStatus(
-																	ticket.ticket_id
-																);
-															}}
-														>
-															Edit Status
-														</button>
+																onClick={() => {
+																	if (
+																		userRoles.includes(
+																			"Can Edit Status"
+																		)
+																	) {
+																		handleStatus(
+																			ticket.ticket_id
+																		);
+																	}
+																}}
+															>
+																Edit Status
+															</button>
+														)
 													)}
 
 													{priorityMode[

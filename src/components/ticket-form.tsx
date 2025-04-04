@@ -60,6 +60,7 @@ const formSchema = z.object({
 
 const TicketForm = () => {
 	const [selectedCategory, setSelectedCategory] = useState("");
+	const [loading, setLoading] = useState<boolean>(false);
 	const router = useRouter();
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -132,6 +133,7 @@ const TicketForm = () => {
 		category: string;
 		description: string;
 	}) => {
+		setLoading(true);
 		try {
 			// Get priority suggestion from AI
 			const priority_level = await getAIResponse(
@@ -181,6 +183,7 @@ const TicketForm = () => {
 		} catch (err) {
 			console.error("Error analyzing priority:", err);
 		}
+		setLoading(false);
 	};
 
 	return (
@@ -431,8 +434,12 @@ const TicketForm = () => {
 								</FormItem>
 							)}
 						/>
-						<Button className="w-full" type="submit">
-							Submit
+						<Button
+							className="w-full"
+							type="submit"
+							disabled={loading}
+						>
+							{loading ? "Submitting Ticket..." : "Submit"}
 						</Button>
 					</form>
 				</Form>

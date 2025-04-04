@@ -30,9 +30,25 @@ const formSchema = z
 		displayName: z.string().min(2, {
 			message: "Display name must be at least 2 characters.",
 		}),
-		email: z.string().email({
-			message: "Invalid email address.",
-		}),
+		email: z
+			.string()
+			.email({
+				message: "Invalid email address.",
+			})
+			.superRefine(async (email, ctx) => {
+				const { data: existingUser, error } = await supabase
+					.from("profiles") // Change to "auth.users" if checking auth table
+					.select("email")
+					.eq("email", email)
+					.maybeSingle();
+
+				if (existingUser) {
+					ctx.addIssue({
+						code: "custom",
+						message: "This email is already registered.",
+					});
+				}
+			}),
 		password: z.string().min(6, {
 			message: "Password must be at least 6 characters.",
 		}),
@@ -142,7 +158,6 @@ const TeamsPage = () => {
 				setError(error.message);
 			} else {
 				setTeamMembers(data);
-				console.log(data);
 			}
 
 			setLoading(false);
@@ -221,8 +236,6 @@ const TeamsPage = () => {
 				return;
 			}
 
-			console.log("Fetched user roles:", data?.role); // Debugging
-
 			// Directly use data.role since it's already an array
 			if (data?.role && Array.isArray(data.role)) {
 				setUserRoles(data.role);
@@ -240,29 +253,55 @@ const TeamsPage = () => {
 			return;
 		}
 
-		// Unassign tickets instead of deleting them
-		const { error: updateError } = await supabase
-			.from("tickets")
-			.update({ assign_to: null })
-			.eq("assign_to", memberId);
+		try {
+			// 1. Unassign tickets first
+			const { error: updateError } = await supabase
+				.from("tickets")
+				.update({ assign_to: null })
+				.eq("assign_to", memberId);
 
-		if (updateError) {
-			toast.error("Failed to update tickets: " + updateError.message);
-			return;
-		}
+			if (updateError) {
+				toast.error("Failed to update tickets: " + updateError.message);
+				return;
+			}
 
-		// Now delete the user
-		const { error: userError } = await supabase
-			.from("profiles")
-			.delete()
-			.eq("id", memberId);
-		if (userError) {
-			toast.error("Failed to delete user: " + userError.message);
-		} else {
+			// 2. Delete from profiles table
+			const { error: userError } = await supabase
+				.from("profiles")
+				.delete()
+				.eq("id", memberId);
+
+			if (userError) {
+				toast.error("Failed to delete user: " + userError.message);
+				return;
+			}
+
+			// 3. Call your API endpoint to delete from Auth
+			const response = await fetch("/api/delete-user", {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ userId: memberId }),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				toast.error(
+					"Failed to delete user authentication: " +
+						(errorData.message || "Unknown error")
+				);
+				return;
+			}
+
+			// Success
 			toast.success("User deleted successfully.");
 			setTeamMembers((prev) =>
 				prev.filter((member) => member.id !== memberId)
 			);
+		} catch (error) {
+			toast.error("An unexpected error occurred during deletion.");
+			console.error(error);
 		}
 	};
 

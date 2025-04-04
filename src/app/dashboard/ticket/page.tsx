@@ -96,10 +96,16 @@ const TicketPage = () => {
 		fetchProfiles();
 	}, []);
 
-	const [editMode, setEditMode] = useState<{ [key: number]: boolean }>({});
+	const [priorityMode, setPriorityMode] = useState<{
+		[key: number]: boolean;
+	}>({});
+	const [statusMode, setStatusMode] = useState<{ [key: number]: boolean }>(
+		{}
+	);
 	const [assignMode, setAssignMode] = useState<{ [key: number]: boolean }>(
 		{}
 	);
+
 	const [selectedPriorities, setSelectedPriorities] = useState<{
 		[key: number]: string;
 	}>({});
@@ -114,8 +120,12 @@ const TicketPage = () => {
 	}>({});
 
 	// Toggle Edit Mode
-	const handleEdit = (ticketId: number) => {
-		setEditMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
+	const handlePriority = (ticketId: number) => {
+		setPriorityMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
+	};
+
+	const handleStatus = (ticketId: number) => {
+		setStatusMode((prev) => ({ ...prev, [ticketId]: !prev[ticketId] }));
 	};
 
 	const handleAssign = (ticketId: number) => {
@@ -465,6 +475,7 @@ const TicketPage = () => {
 			return 0;
 		});
 
+	// Fetch user roles from
 	const [userRoles, setUserRoles] = React.useState<string[]>([]);
 
 	React.useEffect(() => {
@@ -626,7 +637,7 @@ const TicketPage = () => {
 													{ticket.description}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-													{editMode[
+													{statusMode[
 														ticket.ticket_id
 													] ? (
 														<Select
@@ -668,7 +679,7 @@ const TicketPage = () => {
 													)}
 												</td>
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-													{editMode[
+													{priorityMode[
 														ticket.ticket_id
 													] ? (
 														<Select
@@ -772,8 +783,8 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col">
-													{editMode[
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col items-start">
+													{statusMode[
 														ticket.ticket_id
 													] ? (
 														<>
@@ -781,17 +792,12 @@ const TicketPage = () => {
 																<button
 																	className="cursor-pointer font-semibold text-black hover:text-green-900"
 																	onClick={async () => {
-																		await Promise.all(
-																			[
-																				updatePriority(
-																					ticket.ticket_id
-																				),
-																				updateStatus(
-																					ticket.ticket_id
-																				),
-																			]
-																		);
-																		handleEdit(
+																		await [
+																			updateStatus(
+																				ticket.ticket_id
+																			),
+																		];
+																		handleStatus(
 																			ticket.ticket_id
 																		); // Exit edit mode after saving
 																	}}
@@ -801,7 +807,7 @@ const TicketPage = () => {
 																<button
 																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
 																	onClick={() =>
-																		handleEdit(
+																		handleStatus(
 																			ticket.ticket_id
 																		)
 																	} // Just exits edit mode
@@ -814,29 +820,91 @@ const TicketPage = () => {
 														<button
 															className={`text-indigo-600 ${
 																userRoles.includes(
-																	"Can Edit"
+																	"Can Edit Status"
 																)
 																	? "hover:text-indigo-900 font-semibold"
 																	: "opacity-50 cursor-not-allowed font-semibold"
 															}`}
 															disabled={
 																!userRoles.includes(
-																	"Can Edit"
+																	"Can Edit Status"
 																)
 															}
 															onClick={() => {
 																if (
 																	userRoles.includes(
-																		"Can Edit"
+																		"Can Edit Status"
 																	)
 																) {
 																}
-																handleEdit(
+																handleStatus(
 																	ticket.ticket_id
 																);
 															}}
 														>
-															Edit
+															Edit Status
+														</button>
+													)}
+
+													{priorityMode[
+														ticket.ticket_id
+													] ? (
+														<>
+															<div className="flex flex-row gap-2">
+																<button
+																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	onClick={async () => {
+																		await [
+																			updatePriority(
+																				ticket.ticket_id
+																			),
+																		];
+																		handlePriority(
+																			ticket.ticket_id
+																		); // Exit edit mode after saving
+																	}}
+																>
+																	Save
+																</button>
+																<button
+																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																	onClick={() =>
+																		handlePriority(
+																			ticket.ticket_id
+																		)
+																	} // Just exits edit mode
+																>
+																	Cancel
+																</button>
+															</div>
+														</>
+													) : (
+														<button
+															className={`text-indigo-600 ${
+																userRoles.includes(
+																	"Can Edit Priority"
+																)
+																	? "hover:text-indigo-900 font-semibold"
+																	: "opacity-50 cursor-not-allowed font-semibold"
+															}`}
+															disabled={
+																!userRoles.includes(
+																	"Can Edit Priority"
+																)
+															}
+															onClick={() => {
+																if (
+																	userRoles.includes(
+																		"Can Edit Priority"
+																	)
+																) {
+																}
+																handlePriority(
+																	ticket.ticket_id
+																);
+															}}
+														>
+															Edit Priority
 														</button>
 													)}
 

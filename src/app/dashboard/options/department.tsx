@@ -212,10 +212,12 @@ const Department = () => {
 									<Button
 										type="submit"
 										disabled={
-											!userRoles.includes("Can Add")
+											!userRoles.includes(
+												"Can Add Config"
+											)
 										}
 										className={`${
-											userRoles.includes("Can Add")
+											userRoles.includes("Can Add Config")
 												? "cursor-pointer "
 												: "opacity-50 cursor-not-allowed "
 										}`}
@@ -259,20 +261,20 @@ const Department = () => {
 													<button
 														className={`text-indigo-600 ml-4 ${
 															userRoles.includes(
-																"Can Edit"
+																"Can Edit Config"
 															)
 																? "hover:text-indigo-900"
 																: "opacity-50 cursor-not-allowed"
 														}`}
 														disabled={
 															!userRoles.includes(
-																"Can Edit"
+																"Can Edit Config"
 															)
 														}
 														onClick={() => {
 															if (
 																userRoles.includes(
-																	"Can Edit"
+																	"Can Edit Config"
 																)
 															) {
 																setSelectedDepartment(
@@ -337,14 +339,14 @@ const Department = () => {
 													<button
 														className={`text-red-600 ml-4 ${
 															userRoles.includes(
-																"Can Delete"
+																"Can Delete Config"
 															)
 																? "hover:text-red-900"
 																: "opacity-50 cursor-not-allowed"
 														}`}
 														disabled={
 															!userRoles.includes(
-																"Can Delete"
+																"Can Delete Config"
 															)
 														}
 													>

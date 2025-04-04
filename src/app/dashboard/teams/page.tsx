@@ -393,14 +393,14 @@ const TeamsPage = () => {
 								<div className="cursor-not-allowed">
 									<Button
 										className={`${
-											userRoles.includes("Can Add")
+											userRoles.includes("Can Add Teams")
 												? "cursor-pointer w-full "
 												: "opacity-50 cursor-not-allowed w-full "
 										}`}
 										type="submit"
 										disabled={
 											loading ||
-											!userRoles.includes("Can Add")
+											!userRoles.includes("Can Add Teams")
 										}
 									>
 										{loading
@@ -458,9 +458,14 @@ const TeamsPage = () => {
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											<div className="flex flex-col">
 												{[
-													"Can Add",
-													"Can Edit",
-													"Can Delete",
+													"Can Add Config",
+													"Can Edit Config",
+													"Can Delete Config",
+													"Can Add Teams",
+													"Can Edit Teams",
+													"Can Delete Teams",
+													"Can Edit Priority",
+													"Can Edit Status",
 													"Can Assign",
 												].map((role) => (
 													<div
@@ -514,20 +519,20 @@ const TeamsPage = () => {
 													<button
 														className={`text-indigo-600 ${
 															userRoles.includes(
-																"Can Edit"
+																"Can Edit Teams"
 															)
 																? "hover:text-indigo-900"
 																: "opacity-50 cursor-not-allowed"
 														}`}
 														disabled={
 															!userRoles.includes(
-																"Can Edit"
+																"Can Edit Teams"
 															)
 														}
 														onClick={() => {
 															if (
 																userRoles.includes(
-																	"Can Edit"
+																	"Can Edit Teams"
 																)
 															) {
 															}
@@ -544,14 +549,14 @@ const TeamsPage = () => {
 															<button
 																className={`text-red-600 ${
 																	userRoles.includes(
-																		"Can Delete"
+																		"Can Delete Teams"
 																	)
 																		? "hover:text-red-900"
 																		: "opacity-50 cursor-not-allowed"
 																}`}
 																disabled={
 																	!userRoles.includes(
-																		"Can Delete"
+																		"Can Delete Teams"
 																	)
 																}
 															>

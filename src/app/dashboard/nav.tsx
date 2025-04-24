@@ -5,6 +5,8 @@ import Teams from "@/app/dashboard/teams/page";
 import Options from "@/app/dashboard/options/department";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Logo from "@/../public/img/logo2.png";
 
 const DashboardNav = () => {
 	const [displayName, setDisplayName] = useState<string | null>(null);
@@ -90,7 +92,7 @@ const DashboardNav = () => {
 				data-drawer-toggle="default-sidebar"
 				aria-controls="default-sidebar"
 				type="button"
-				className="inline-cursor-pointer flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+				className="inline-cursor-pointer flex items-center p-2 mt-2 ms-3 text-sm text-[#34BFA3] rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
 			>
 				<span className="sr-only">Open sidebar</span>
 				<svg
@@ -116,10 +118,10 @@ const DashboardNav = () => {
 				} sm:translate-x-0`}
 				aria-label="Sidebar"
 			>
-				<div className="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+				<div className="h-full px-3 py-4 overflow-y-auto bg-[#EDE7F6] dark:bg-gray-800">
 					<ul className="space-y-2 font-medium">
 						<li className="flex items-center justify-between p-2 text-xl font-bold">
-							<h1>Hi, {displayName}</h1>
+							<h1 className="text-[#7E57C2]">Hi, {displayName}</h1>
 						</li>
 						<li>
 							<button
@@ -127,15 +129,15 @@ const DashboardNav = () => {
 								className={`cursor-pointer flex items-center p-2 rounded-lg group w-full 
           ${
 				activeComponent === "Tickets"
-					? "bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white"
-					: "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700"
+									? "bg-[#34BFA3] text-white"
+									: "text-gray-900 dark:text-white duration-200 hover:bg-[#34BFA3] hover:text-white"
 			}`}
 							>
 								<svg
 									className={`shrink-0 w-5 h-5 transition duration-75 ${
 										activeComponent === "Tickets"
-											? "text-gray-900 dark:text-white"
-											: "text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+											? "text-white"
+											: "text-gray-500 group-hover:text-white"
 									}`}
 									aria-hidden="true"
 									xmlns="http://www.w3.org/2000/svg"
@@ -155,15 +157,15 @@ const DashboardNav = () => {
 								className={`cursor-pointer flex items-center p-2 rounded-lg group w-full 
           ${
 				activeComponent === "Teams"
-					? "bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white"
-					: "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700"
+					? "bg-[#34BFA3] text-white"
+					: "text-gray-900 dark:text-white duration-200 hover:bg-[#34BFA3] hover:text-white"
 			}`}
 							>
 								<svg
 									className={`shrink-0 w-5 h-5 transition duration-75 ${
 										activeComponent === "Teams"
-											? "text-gray-900 dark:text-white"
-											: "text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+											? "text-white"
+											: "text-gray-500 group-hover:text-white"
 									}`}
 									aria-hidden="true"
 									xmlns="http://www.w3.org/2000/svg"
@@ -186,15 +188,15 @@ const DashboardNav = () => {
 								className={`cursor-pointer flex items-center p-2 rounded-lg group w-full 
           ${
 				activeComponent === "Options"
-					? "bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white"
-					: "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700"
+					? "bg-[#34BFA3] text-white"
+					: "text-gray-00 dark:text-white duration-200 hover:bg-[#34BFA3] hover:text-white"
 			}`}
 							>
 								<svg
 									className={`shrink-0 w-5 h-5 transition duration-75 ${
 										activeComponent === "Options"
-											? "text-gray-900 dark:text-white"
-											: "text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+											? "text-white"
+											: "text-gray-500 group-hover:text-white"
 									}`}
 									aria-hidden="true"
 									xmlns="http://www.w3.org/2000/svg"
@@ -211,10 +213,11 @@ const DashboardNav = () => {
 						<li>
 							<button
 								onClick={handleLogout}
-								className="cursor-pointer flex items-center p-2 rounded-lg group w-full text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700"
+								className="cursor-pointer flex items-center p-2 rounded-lg group w-full transition-colors duration-200
+										text-gray-500 dark:text-white hover:bg-[#34BFA3] hover:text-white"
 							>
 								<svg
-									className="shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+									className="shrink-0 w-5 h-5text-gray-500 transition-colors duration-200 dark:text-gray-400 group-hover:text-white"
 									aria-hidden="true"
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
@@ -232,6 +235,9 @@ const DashboardNav = () => {
 							</button>
 						</li>
 					</ul>
+					<footer className="mt-4 p-2 border-t border-gray-300 dark:border-gray-700 flex justify-center">
+			<Image src={Logo} alt="MISDesk Logo" width={40} height={40} />
+		</footer>
 				</div>
 			</aside>
 
@@ -242,6 +248,7 @@ const DashboardNav = () => {
 					{activeComponent === "Options" && <Options />}
 				</div>
 			</div>
+
 		</div>
 	);
 };

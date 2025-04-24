@@ -177,9 +177,9 @@ const Department = () => {
 			{/* Flex container for responsiveness */}
 			<div className="flex flex-col lg:flex-row gap-6">
 				{/* Department Container */}
-				<div className="w-full lg:w-1/2 border border-black p-5 rounded-lg shadow-xl">
+				<div className="w-full lg:w-1/2 border border-[black] p-5 rounded-lg shadow-xl">
 					<div className="pb-6">
-						<h2 className="text-2xl font-bold">Department</h2>
+						<h2 className="text-2xl font-bold text-[#7E57C2]">Department</h2>
 					</div>
 
 					<div className="w-full">
@@ -200,6 +200,7 @@ const Department = () => {
 											</FormLabel>
 											<FormControl>
 												<Input
+													style={{ borderColor: '#34BFA3' }}
 													placeholder="BSCS"
 													{...field}
 												/>
@@ -218,7 +219,7 @@ const Department = () => {
 										}
 										className={`${
 											userRoles.includes("Can Add Config")
-												? "cursor-pointer "
+												? "!bg-[#34BFA3] hover:!bg-[#52ac9a] cursor-pointer"
 												: "opacity-50 cursor-not-allowed "
 										}`}
 									>
@@ -230,7 +231,7 @@ const Department = () => {
 					</div>
 
 					{/* table */}
-					<div className="py-6">
+					<div className="py-6 overflow-x-auto">
 						<table className="min-w-full divide-y divide-gray-200">
 							<thead className="bg-gray-50">
 								<tr>
@@ -240,7 +241,7 @@ const Department = () => {
 									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
 										Department Name
 									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+									<th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
 										Actions
 									</th>
 								</tr>
@@ -254,17 +255,18 @@ const Department = () => {
 										<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 											{department.name}
 										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-3 justify-center">
 											{/* ✅ Edit Dialog */}
 											<Dialog>
 												<DialogTrigger asChild>
 													<button
-														className={`text-indigo-600 ml-4 ${
+													type="button"
+														className={` px-5 py-1 rounded  text-sm font-medium border ${
 															userRoles.includes(
 																"Can Edit Config"
 															)
-																? "hover:text-indigo-900"
-																: "opacity-50 cursor-not-allowed"
+																? "bg-white text-[#00B0FB] !border-[#00B0FB] hover:bg-[#00B0FB] hover:text-white cursor-pointer"
+																: "bg-gray-300 opacity-50 cursor-not-allowed"
 														}`}
 														disabled={
 															!userRoles.includes(
@@ -292,7 +294,7 @@ const Department = () => {
 												<DialogContent>
 													<DialogHeader>
 														<DialogTitle>
-															Edit Department
+															<h2 className="text-[#7E57C2]">Edit Department</h2>
 														</DialogTitle>
 													</DialogHeader>
 													<Form {...editForm}>
@@ -325,7 +327,7 @@ const Department = () => {
 																)}
 															/>
 															<div className="flex justify-end">
-																<Button type="submit">
+																<Button type="submit" style={{ backgroundColor: '#34BFA3' }}>
 																	Save Changes
 																</Button>
 															</div>
@@ -337,11 +339,12 @@ const Department = () => {
 											<Dialog>
 												<DialogTrigger asChild>
 													<button
-														className={`text-red-600 ml-4 ${
+														type="button"
+														className={`px-5 py-1 rounded text-sm font-medium ${
 															userRoles.includes(
 																"Can Delete Config"
 															)
-																? "hover:text-red-900"
+																? "bg-[#DB3A3A] text-white  hover:bg-[#a12c2c] hover:text-white cursor-pointer"
 																: "opacity-50 cursor-not-allowed"
 														}`}
 														disabled={

@@ -192,8 +192,9 @@ const TicketForm = () => {
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
-						className="space-y-6"
-					>
+						className="space-y-6">
+						
+						<h2 className="text-center font-bold text-[#A22630] text-2xl">Submit a Ticket</h2>
 						<div className="flex flex-col md:flex-row gap-4">
 							<FormField
 								control={form.control}

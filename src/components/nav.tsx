@@ -2,7 +2,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import Image from 'next/image';
+import Logo from "@/../public/img/logo2.png";
 const Nav = () => {
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
@@ -14,19 +15,17 @@ const Nav = () => {
 
 	return (
 		<nav className="bg-white border-gray-200 dark:bg-gray-900 shadow-lg">
-			<div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-				<Link
-					href="/"
-					className="text-xl font-bold text-gray-900 dark:text-white"
-				>
-					Emilio Aguinaldo College Cavite-MISD
-				</Link>
+			<div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
+			<Link href="/" className="flex items-center gap-2 text-xl font-bold">
+				<Image src={Logo} alt="MISDesk Logo" width={40} height={40} />
+				<span className="text-[#7E57C2]">MISD<span className="text-[#34BFA3]">esk</span></span>
+			</Link>
 
 				{/* Mobile Menu Button */}
 				<button
 					onClick={toggleMenu}
 					type="button"
-					className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+					className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-[#34BFA3] rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
 					aria-controls="navbar-default"
 					aria-expanded={isOpen}
 				>
@@ -61,8 +60,8 @@ const Nav = () => {
 								href="/"
 								className={`block py-2 px-3 rounded-sm md:p-0 ${
 									pathname === "/"
-										? "text-red-700"
-										: "text-black"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
 								}`}
 								aria-current={
 									pathname === "/" ? "page" : undefined
@@ -76,8 +75,8 @@ const Nav = () => {
 								href="/track-tickets"
 								className={`block py-2 px-3 rounded-sm md:p-0 ${
 									pathname === "/track-tickets"
-										? "text-red-700"
-										: "text-black"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
 								}`}
 							>
 								Track Tickets
@@ -88,8 +87,8 @@ const Nav = () => {
 								href="/login"
 								className={`block py-2 px-3 rounded-sm md:p-0 ${
 									pathname === "/login"
-										? "text-red-700"
-										: "text-black"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
 								}`}
 							>
 								Login

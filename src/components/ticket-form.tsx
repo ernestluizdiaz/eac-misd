@@ -435,7 +435,7 @@ const TicketForm = () => {
 							)}
 						/>
 						<Button
-							className="w-full"
+							className="w-full bg-[#34BFA3]"
 							type="submit"
 							disabled={loading}
 						>

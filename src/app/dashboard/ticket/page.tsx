@@ -57,7 +57,7 @@ const SearchIcon = () => {
 };
 
 const TicketPage = () => {
-	const [sortOption, setSortOption] = useState("ID");
+	const [sortOption, setSortOption] = useState("");
 	const [tickets, setTickets] = useState<any[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -644,7 +644,7 @@ const TicketPage = () => {
 				<div>
 					<div className="overflow-x-auto">
 						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
+							<thead className="bg-[#F2F2F2]">
 								<tr>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Ticket No.
@@ -703,35 +703,35 @@ const TicketPage = () => {
 												key={ticket.ticket_id}
 												className="hover:bg-gray-100"
 											>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.ticket_id
 														.toString()
 														.padStart(3, "0")}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.first_name}{" "}
 													{ticket.last_name}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.email}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.filer?.name ||
 														"N/A"}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.department?.name ||
 														"N/A"}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.category}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.description}
 												</td>
 
 												{/* Your existing table cell with status dropdown */}
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{statusMode[
 														ticket.ticket_id
 													] ? (
@@ -863,7 +863,7 @@ const TicketPage = () => {
 													</DialogContent>
 												</Dialog>
 
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{priorityMode[
 														ticket.ticket_id
 													] ? (
@@ -907,7 +907,7 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{assignMode[
 														ticket.ticket_id
 													] ? (
@@ -968,14 +968,14 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col items-start">
+												<td className="px-6 py-4 whitespace-nowrap space-y-1 text-sm text-gray-500 flex flex-col items-start">
 													{statusMode[
 														ticket.ticket_id
 													] ? (
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		if (
 																			selectedStatus[
@@ -1014,7 +1014,7 @@ const TicketPage = () => {
 														ticket.status !==
 															"Resolved" && ( // Hide button if ticket is resolved
 															<button
-																className={`text-indigo-600 ${
+																className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
 																	userRoles.includes(
 																		"Can Edit Status"
 																	)
@@ -1049,7 +1049,7 @@ const TicketPage = () => {
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		await [
 																			updatePriority(
@@ -1077,7 +1077,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-indigo-600 ${
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-6 ${
 																userRoles.includes(
 																	"Can Edit Priority"
 																)
@@ -1111,7 +1111,7 @@ const TicketPage = () => {
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		await updateAssignedTo(
 																			ticket.ticket_id
@@ -1137,7 +1137,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-indigo-600 ${
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-10 ${
 																userRoles.includes(
 																	"Can Assign"
 																)

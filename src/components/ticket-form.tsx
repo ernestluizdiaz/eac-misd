@@ -187,7 +187,7 @@ const TicketForm = () => {
 	};
 
 	return (
-		<div className="flex items-center justify-center py-10">
+		<div className="flex items-center justify-center min-h-screen">
 			<div className="w-lg mx-5 border border-gray-200 p-8 rounded-lg">
 				<Form {...form}>
 					<form
@@ -435,7 +435,7 @@ const TicketForm = () => {
 							)}
 						/>
 						<Button
-							className="w-full"
+							className="w-full bg-[#34BFA3]"
 							type="submit"
 							disabled={loading}
 						>

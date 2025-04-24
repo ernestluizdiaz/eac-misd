@@ -21,9 +21,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
-import Logo from "@/../public/img/Call center-rafiki.png";
-import Shape from "@/../public/img/rectangle.png";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
@@ -190,34 +187,7 @@ const TicketForm = () => {
 	};
 
 	return (
-		<div className="relative flex flex-col items-center justify-center py-10 overflow-hidden">
-			<div className="absolute -top-[60px] -right-[5px] -z-10 w-[350px] h-[100px] md:w-[600px] md:h-[500px] md:-top-[90px]">
-			<Image
-				src={Shape}
-				alt="rectangle"
-			/>
-			</div>
-
-			<div className="flex flex-col-reverse text-center md:mx-5 md:flex-col-reverse lg:text-start lg:w-250 lg:mx-5 lg:flex-row lg:justify-evenly items-center">
-				<div className="mx-2">
-					<h1 className="text-3xl font-bold">
-						Welcome to <span className="text-[#7E57C2]">MISD</span><span className="text-[#34BFA3]">esk</span>!
-					</h1>
-					<p className="text-xl mt-4">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-					</p>
-					<button className="text-white px-15 py-4 rounded-sm hover:cursor-pointer mt-4 bg-[#34BFA3]">Submit a Ticket</button>
-				</div>
-				<div className="w-[400px] md:w-[400px] lg:w-[800px]">
-				<Image
-					src={Logo}
-					alt="Logo"
-					width={450}
-					height={450}
-					className="w-full h-auto"
-				/>
-				</div>
-			</div>
+		<div className="flex items-center justify-center min-h-screen ">
 			<div className="w-lg mx-5 border border-gray-200 p-8 rounded-lg">
 				<Form {...form}>
 					<form

@@ -89,7 +89,7 @@ const TicketForm = () => {
 					data.map((filer: { filer_id: number; name: string }) => ({
 						filer_id: filer.filer_id,
 						name: filer.name,
-					}))
+					})).sort((a, b) => a.name.localeCompare(b.name))
 				);
 			}
 		};
@@ -108,16 +108,18 @@ const TicketForm = () => {
 				console.error("Error fetching departments:", error.message);
 			} else {
 				setDepartments(
-					data.map(
-						(department: {
-							department_id: number;
-							name: string;
-						}) => ({
-							department_id: department.department_id,
-							name: department.name,
-						})
-					)
-				);
+                    data
+                        .map(
+                            (department: {
+                                department_id: number;
+                                name: string;
+                            }) => ({
+                                department_id: department.department_id,
+                                name: department.name,
+                            })
+                        )
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                );
 			}
 		};
 

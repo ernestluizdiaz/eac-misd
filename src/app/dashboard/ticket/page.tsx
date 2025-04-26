@@ -57,7 +57,7 @@ const SearchIcon = () => {
 };
 
 const TicketPage = () => {
-	const [sortOption, setSortOption] = useState("ID");
+	const [sortOption, setSortOption] = useState("");
 	const [tickets, setTickets] = useState<any[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,20 +166,17 @@ const TicketPage = () => {
 
 	const handleProofSubmit = () => {
 		if (currentTicketId !== null && resolutionProof[currentTicketId]) {
-			// Save the status with proof
+			// Only update the local state, DO NOT call updateStatus here
 			setSelectedStatus((prev) => ({
 				...prev,
 				[currentTicketId]: "Resolved",
 			}));
 
-			// Update ticket with proof and resolved timestamp
-			updateStatus(
-				currentTicketId,
-				"Resolved",
-				resolutionProof[currentTicketId]
-			);
+			// Also store proof temporarily if needed later when saving
+			// (you already have resolutionProof state)
 
 			setIsProofDialogOpen(false);
+			// No updateStatus call yet!
 		}
 	};
 
@@ -499,7 +496,9 @@ const TicketPage = () => {
 			const searchLower = searchTerm.toLowerCase();
 
 			const matchesSearch =
-				ticket.ticket_id.toString().includes(searchLower) ||
+				String(ticket.ticket_id)
+					.padStart(3, "0")
+					.includes(searchLower) ||
 				ticket.first_name.toLowerCase().includes(searchLower) ||
 				ticket.last_name.toLowerCase().includes(searchLower) ||
 				ticket.email.toLowerCase().includes(searchLower) ||
@@ -522,7 +521,7 @@ const TicketPage = () => {
 					.includes(searchLower) ||
 				(ticket.status ?? "").toLowerCase().includes(searchLower);
 
-			// Filter based on sortOption for status
+			// Filter based on sortOption for status only
 			if (["Pending", "In Progress", "Resolved"].includes(sortOption)) {
 				return matchesSearch && ticket.status === sortOption;
 			}
@@ -530,40 +529,8 @@ const TicketPage = () => {
 			return matchesSearch;
 		})
 		.sort((a, b) => {
-			if (sortOption === "ID") {
-				return a.ticket_id - b.ticket_id;
-			} else if (sortOption === "Name") {
-				return a.first_name.localeCompare(b.first_name);
-			} else if (sortOption === "Email") {
-				return a.email.localeCompare(b.email);
-			} else if (sortOption === "Role") {
-				return (a.filer?.name || "").localeCompare(b.filer?.name || "");
-			} else if (sortOption === "Department") {
-				return (a.department?.name || "").localeCompare(
-					b.department?.name || ""
-				);
-			} else if (sortOption === "Issue Category") {
-				return a.category.localeCompare(b.category);
-			} else if (sortOption === "Priority Level") {
-				const priorityOrder: Record<
-					"High" | "Moderate" | "Low",
-					number
-				> = {
-					High: 1,
-					Moderate: 2,
-					Low: 3,
-				};
-				return (
-					(priorityOrder[
-						a.priority_level as keyof typeof priorityOrder
-					] || 4) -
-					(priorityOrder[
-						b.priority_level as keyof typeof priorityOrder
-					] || 4)
-				);
-			}
-
-			return 0;
+			// Always sort by ticket_id ascending by default
+			return a.ticket_id - b.ticket_id;
 		});
 
 	// Fetch user roles from
@@ -620,19 +587,6 @@ const TicketPage = () => {
 							<SelectValue placeholder="Sort by" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="ID">ID</SelectItem>
-							<SelectItem value="Name">Name</SelectItem>
-							{/* <SelectItem value="Email">Email</SelectItem> */}
-							<SelectItem value="Role">Role</SelectItem>
-							<SelectItem value="Department">
-								Department
-							</SelectItem>
-							<SelectItem value="Issue Category">
-								Issue Category
-							</SelectItem>
-							<SelectItem value="Priority Level">
-								Priority Level
-							</SelectItem>
 							<SelectItem value="Pending">Pending</SelectItem>
 							<SelectItem value="In Progress">
 								In Progress
@@ -644,7 +598,7 @@ const TicketPage = () => {
 				<div>
 					<div className="overflow-x-auto">
 						<table className="min-w-full divide-y divide-gray-200">
-							<thead className="bg-gray-50">
+							<thead className="bg-[#F2F2F2]">
 								<tr>
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Ticket No.
@@ -703,35 +657,35 @@ const TicketPage = () => {
 												key={ticket.ticket_id}
 												className="hover:bg-gray-100"
 											>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.ticket_id
 														.toString()
 														.padStart(3, "0")}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.first_name}{" "}
 													{ticket.last_name}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.email}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.filer?.name ||
 														"N/A"}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.department?.name ||
 														"N/A"}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.category}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{ticket.description}
 												</td>
 
 												{/* Your existing table cell with status dropdown */}
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{statusMode[
 														ticket.ticket_id
 													] ? (
@@ -774,7 +728,7 @@ const TicketPage = () => {
 													)}
 												</td>
 
-												{/* Resolution Proof Dialog */}
+												{/* Resolution Proof RequiredDialog */}
 												<Dialog
 													open={isProofDialogOpen}
 													onOpenChange={
@@ -863,7 +817,7 @@ const TicketPage = () => {
 													</DialogContent>
 												</Dialog>
 
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{priorityMode[
 														ticket.ticket_id
 													] ? (
@@ -907,7 +861,7 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{assignMode[
 														ticket.ticket_id
 													] ? (
@@ -968,14 +922,14 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex flex-col items-start">
+												<td className="px-6 py-4 whitespace-nowrap space-y-1 text-sm text-gray-500 flex flex-col items-start">
 													{statusMode[
 														ticket.ticket_id
 													] ? (
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		if (
 																			selectedStatus[
@@ -988,7 +942,11 @@ const TicketPage = () => {
 																				selectedStatus[
 																					ticket
 																						.ticket_id
-																				]
+																				],
+																				resolutionProof[
+																					ticket
+																						.ticket_id
+																				] // pass the proof if status is Resolved
 																			);
 																		}
 																		handleStatus(
@@ -1000,47 +958,68 @@ const TicketPage = () => {
 																</button>
 																<button
 																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-																	onClick={() =>
+																	onClick={async () => {
+																		if (
+																			selectedStatus[
+																				ticket
+																					.ticket_id
+																			]
+																		) {
+																			await updateStatus(
+																				ticket.ticket_id,
+																				selectedStatus[
+																					ticket
+																						.ticket_id
+																				],
+																				selectedStatus[
+																					ticket
+																						.ticket_id
+																				] ===
+																					"Resolved"
+																					? resolutionProof[
+																							ticket
+																								.ticket_id
+																					  ]
+																					: undefined
+																			);
+																		}
 																		handleStatus(
 																			ticket.ticket_id
-																		)
-																	} // Just exits edit mode
+																		); // Exit edit mode
+																	}}
 																>
 																	Cancel
 																</button>
 															</div>
 														</>
 													) : (
-														ticket.status !==
-															"Resolved" && ( // Hide button if ticket is resolved
-															<button
-																className={`text-indigo-600 ${
+														<button
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
+																userRoles.includes(
+																	"Can Edit Status"
+																)
+																	? "hover:text-indigo-900 font-semibold"
+																	: "opacity-50 cursor-not-allowed font-semibold"
+															}`}
+															disabled={
+																!userRoles.includes(
+																	"Can Edit Status"
+																)
+															}
+															onClick={() => {
+																if (
 																	userRoles.includes(
 																		"Can Edit Status"
 																	)
-																		? "hover:text-indigo-900 font-semibold"
-																		: "opacity-50 cursor-not-allowed font-semibold"
-																}`}
-																disabled={
-																	!userRoles.includes(
-																		"Can Edit Status"
-																	)
+																) {
+																	handleStatus(
+																		ticket.ticket_id
+																	);
 																}
-																onClick={() => {
-																	if (
-																		userRoles.includes(
-																			"Can Edit Status"
-																		)
-																	) {
-																		handleStatus(
-																			ticket.ticket_id
-																		);
-																	}
-																}}
-															>
-																Edit Status
-															</button>
-														)
+															}}
+														>
+															Edit Status
+														</button>
 													)}
 
 													{priorityMode[
@@ -1049,7 +1028,7 @@ const TicketPage = () => {
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		await [
 																			updatePriority(
@@ -1077,7 +1056,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-indigo-600 ${
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-6 ${
 																userRoles.includes(
 																	"Can Edit Priority"
 																)
@@ -1111,7 +1090,7 @@ const TicketPage = () => {
 														<>
 															<div className="flex flex-row gap-2">
 																<button
-																	className="cursor-pointer font-semibold text-black hover:text-green-900"
+																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
 																	onClick={async () => {
 																		await updateAssignedTo(
 																			ticket.ticket_id
@@ -1137,7 +1116,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-indigo-600 ${
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-10 ${
 																userRoles.includes(
 																	"Can Assign"
 																)

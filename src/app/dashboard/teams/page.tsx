@@ -308,46 +308,29 @@ const TeamsPage = () => {
 	return (
 		<div className="p-6">
 			{/* Flex container for responsiveness */}
-			<div className="flex flex-col lg:flex-row gap-6">
+			<div className="flex flex-col gap-6">
 				{/* Add Teams Container */}
-				<div className="w-full lg:w-1/2 border border-black p-5 rounded-lg shadow-xl">
+				<div className="w-full border border-black p-5 rounded-lg shadow-xl">
 					<div className="pb-6">
 						<h2 className="text-2xl font-bold">Create account</h2>
 					</div>
 
-					<div className="w-full">
+					<div className="w-full flex flex-row justify-center">
 						<Form {...form}>
 							<form
 								onSubmit={form.handleSubmit(onSubmit)}
-								className="space-y-5"
+								className="space-y-5 w-full"
 							>
+								<div className="flex flex-row gap-6">
 								{/* Display Name Field */}
 								<FormField
 									control={form.control}
 									name="displayName"
 									render={({ field }) => (
-										<FormItem>
+										<FormItem className="flex-1">
 											<FormLabel>Display Name</FormLabel>
 											<FormControl>
-												<Input {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								{/* Email Field */}
-								<FormField
-									control={form.control}
-									name="email"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Email</FormLabel>
-											<FormControl>
-												<Input
-													type="email"
-													{...field}
-												/>
+												<Input {...field} className="w-full"/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -358,12 +341,31 @@ const TeamsPage = () => {
 									control={form.control}
 									name="password"
 									render={({ field }) => (
-										<FormItem>
+										<FormItem className="flex-1">
 											<FormLabel>Password</FormLabel>
 											<FormControl>
 												<Input
 													type="password"
-													{...field}
+													{...field} className="w-full"
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								</div>
+								<div className="flex flex-row gap-6">
+								{/* Email Field */}
+								<FormField
+									control={form.control}
+									name="email"
+									render={({ field }) => (
+										<FormItem className="flex-1">
+											<FormLabel>Email</FormLabel>
+											<FormControl>
+												<Input
+													type="email"
+													{...field} className="w-full"
 												/>
 											</FormControl>
 											<FormMessage />
@@ -375,26 +377,28 @@ const TeamsPage = () => {
 									control={form.control}
 									name="confirmPassword"
 									render={({ field }) => (
-										<FormItem>
+										<FormItem className="flex-1">
 											<FormLabel>
 												Confirm Password
 											</FormLabel>
 											<FormControl>
 												<Input
 													type="password"
-													{...field}
+													{...field} className="w-full"
 												/>
 											</FormControl>
 											<FormMessage />
 										</FormItem>
 									)}
 								/>
+								</div>
+								<div className="flex justify-center">
 								{/* Submit Button */}
 								<div className="cursor-not-allowed">
 									<Button
 										className={`${
 											userRoles.includes("Can Add Teams")
-												? "cursor-pointer w-full "
+												? "cursor-pointer w-full px-40 bg-[#34BFA3] "
 												: "opacity-50 cursor-not-allowed w-full "
 										}`}
 										type="submit"
@@ -407,6 +411,7 @@ const TeamsPage = () => {
 											? "Registering..."
 											: "Add Account"}
 									</Button>
+									</div>
 								</div>
 							</form>
 						</Form>
@@ -414,7 +419,7 @@ const TeamsPage = () => {
 				</div>
 
 				{/* Filer Container */}
-				<div className="w-full lg:w-1/2 border border-black 500 p-5 rounded-lg shadow-xl">
+				<div className="w-full border border-black 500 p-5 rounded-lg shadow-xl">
 					<div className="pb-6">
 						<h2 className="text-2xl font-bold">
 							Team Members Access
@@ -504,101 +509,108 @@ const TeamsPage = () => {
 												))}
 											</div>
 										</td>
-										<td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-											{editMode === member.id ? (
-												<button
-													className="text-green-600 hover:text-green-900"
-													onClick={() =>
-														handleSave(member.id)
-													}
-												>
-													Save
-												</button>
-											) : (
-												<>
+										<td className="  whitespace-nowrap text-sm font-medium space-x-2">
+											<div className=" flex flex-col items-center space-y-2">
+												{editMode === member.id ? (
 													<button
-														className={`text-indigo-600 ${
-															userRoles.includes(
-																"Can Edit Teams"
-															)
-																? "hover:text-indigo-900"
-																: "opacity-50 cursor-not-allowed"
-														}`}
-														disabled={
-															!userRoles.includes(
-																"Can Edit Teams"
+														className="text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
+														onClick={() =>
+															handleSave(
+																member.id
 															)
 														}
-														onClick={() => {
-															if (
+													>
+														Save
+													</button>
+												) : (
+													<>
+														<button
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-8 ${
 																userRoles.includes(
 																	"Can Edit Teams"
 																)
-															) {
+																	? "hover:text-indigo-900"
+																	: "opacity-50 cursor-not-allowed"
+															}`}
+															disabled={
+																!userRoles.includes(
+																	"Can Edit Teams"
+																)
 															}
-															handleEdit(
-																member.id,
-																member.role
-															);
-														}}
-													>
-														Edit
-													</button>
-													<Dialog>
-														<DialogTrigger asChild>
-															<button
-																className={`text-red-600 ${
+															onClick={() => {
+																if (
 																	userRoles.includes(
-																		"Can Delete Teams"
+																		"Can Edit Teams"
 																	)
-																		? "hover:text-red-900"
-																		: "opacity-50 cursor-not-allowed"
-																}`}
-																disabled={
-																	!userRoles.includes(
-																		"Can Delete Teams"
-																	)
+																) {
 																}
+																handleEdit(
+																	member.id,
+																	member.role
+																);
+															}}
+														>
+															Edit
+														</button>
+														<Dialog>
+															<DialogTrigger
+																asChild
 															>
-																Delete
-															</button>
-														</DialogTrigger>
-
-														<DialogContent>
-															<DialogHeader>
-																<DialogTitle>
-																	Confirm
-																	Deletion
-																</DialogTitle>
-															</DialogHeader>
-															<p>
-																Are you sure you
-																want to delete
-																this member?
-															</p>
-															<div className="flex justify-end space-x-4">
-																<DialogClose
-																	asChild
-																>
-																	<Button variant="secondary">
-																		Cancel
-																	</Button>
-																</DialogClose>
-																<Button
-																	variant="destructive"
-																	onClick={() =>
-																		handleDelete(
-																			member.id
+																<button
+																	className={`text-white bg-red-600 py-1 px-6 rounded-sm ${
+																		userRoles.includes(
+																			"Can Delete Teams"
 																		)
-																	} // Keep the same delete function here
+																			? "hover:text-red-900"
+																			: "opacity-50 cursor-not-allowed"
+																	}`}
+																	disabled={
+																		!userRoles.includes(
+																			"Can Delete Teams"
+																		)
+																	}
 																>
 																	Delete
-																</Button>
-															</div>
-														</DialogContent>
-													</Dialog>
-												</>
-											)}
+																</button>
+															</DialogTrigger>
+
+															<DialogContent>
+																<DialogHeader>
+																	<DialogTitle>
+																		Confirm
+																		Deletion
+																	</DialogTitle>
+																</DialogHeader>
+																<p>
+																	Are you sure
+																	you want to
+																	delete this
+																	member?
+																</p>
+																<div className="flex justify-end space-x-4">
+																	<DialogClose
+																		asChild
+																	>
+																		<Button variant="secondary">
+																			Cancel
+																		</Button>
+																	</DialogClose>
+																	<Button
+																		variant="destructive"
+																		onClick={() =>
+																			handleDelete(
+																				member.id
+																			)
+																		} // Keep the same delete function here
+																	>
+																		Delete
+																	</Button>
+																</div>
+															</DialogContent>
+														</Dialog>
+													</>
+												)}
+											</div>
 										</td>
 									</tr>
 								))}

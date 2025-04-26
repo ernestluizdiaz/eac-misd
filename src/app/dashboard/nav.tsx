@@ -216,7 +216,7 @@ const DashboardNav = () => {
 							<button
 								onClick={handleLogout}
 								className="cursor-pointer flex items-center p-2 rounded-lg group w-full transition-colors duration-200
-										text-gray-500 dark:text-white hover:bg-[#34BFA3] hover:text-white"
+										text-red-600 dark:text-white hover:bg-[#34BFA3] hover:text-white"
 							>
 								<svg
 									className="shrink-0 w-5 h-5text-gray-500 transition-colors duration-200 dark:text-gray-400 group-hover:text-white"
@@ -249,7 +249,7 @@ const DashboardNav = () => {
 			</aside>
 
 			<div className="p-4 sm:ml-64">
-				<div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+				<div className="p-4 dark:border-gray-700">
 					{activeComponent === "Tickets" && <Tickets />}
 					{activeComponent === "Teams" && <Teams />}
 					{activeComponent === "Options" && <Options />}

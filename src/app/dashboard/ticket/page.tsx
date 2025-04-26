@@ -166,20 +166,17 @@ const TicketPage = () => {
 
 	const handleProofSubmit = () => {
 		if (currentTicketId !== null && resolutionProof[currentTicketId]) {
-			// Save the status with proof
+			// Only update the local state, DO NOT call updateStatus here
 			setSelectedStatus((prev) => ({
 				...prev,
 				[currentTicketId]: "Resolved",
 			}));
 
-			// Update ticket with proof and resolved timestamp
-			updateStatus(
-				currentTicketId,
-				"Resolved",
-				resolutionProof[currentTicketId]
-			);
+			// Also store proof temporarily if needed later when saving
+			// (you already have resolutionProof state)
 
 			setIsProofDialogOpen(false);
+			// No updateStatus call yet!
 		}
 	};
 
@@ -499,7 +496,9 @@ const TicketPage = () => {
 			const searchLower = searchTerm.toLowerCase();
 
 			const matchesSearch =
-				ticket.ticket_id.toString().includes(searchLower) ||
+				String(ticket.ticket_id)
+					.padStart(3, "0")
+					.includes(searchLower) ||
 				ticket.first_name.toLowerCase().includes(searchLower) ||
 				ticket.last_name.toLowerCase().includes(searchLower) ||
 				ticket.email.toLowerCase().includes(searchLower) ||
@@ -522,7 +521,7 @@ const TicketPage = () => {
 					.includes(searchLower) ||
 				(ticket.status ?? "").toLowerCase().includes(searchLower);
 
-			// Filter based on sortOption for status
+			// Filter based on sortOption for status only
 			if (["Pending", "In Progress", "Resolved"].includes(sortOption)) {
 				return matchesSearch && ticket.status === sortOption;
 			}
@@ -530,40 +529,8 @@ const TicketPage = () => {
 			return matchesSearch;
 		})
 		.sort((a, b) => {
-			if (sortOption === "ID") {
-				return a.ticket_id - b.ticket_id;
-			} else if (sortOption === "Name") {
-				return a.first_name.localeCompare(b.first_name);
-			} else if (sortOption === "Email") {
-				return a.email.localeCompare(b.email);
-			} else if (sortOption === "Role") {
-				return (a.filer?.name || "").localeCompare(b.filer?.name || "");
-			} else if (sortOption === "Department") {
-				return (a.department?.name || "").localeCompare(
-					b.department?.name || ""
-				);
-			} else if (sortOption === "Issue Category") {
-				return a.category.localeCompare(b.category);
-			} else if (sortOption === "Priority Level") {
-				const priorityOrder: Record<
-					"High" | "Moderate" | "Low",
-					number
-				> = {
-					High: 1,
-					Moderate: 2,
-					Low: 3,
-				};
-				return (
-					(priorityOrder[
-						a.priority_level as keyof typeof priorityOrder
-					] || 4) -
-					(priorityOrder[
-						b.priority_level as keyof typeof priorityOrder
-					] || 4)
-				);
-			}
-
-			return 0;
+			// Always sort by ticket_id ascending by default
+			return a.ticket_id - b.ticket_id;
 		});
 
 	// Fetch user roles from
@@ -620,19 +587,6 @@ const TicketPage = () => {
 							<SelectValue placeholder="Sort by" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="ID">ID</SelectItem>
-							<SelectItem value="Name">Name</SelectItem>
-							{/* <SelectItem value="Email">Email</SelectItem> */}
-							<SelectItem value="Role">Role</SelectItem>
-							<SelectItem value="Department">
-								Department
-							</SelectItem>
-							<SelectItem value="Issue Category">
-								Issue Category
-							</SelectItem>
-							<SelectItem value="Priority Level">
-								Priority Level
-							</SelectItem>
 							<SelectItem value="Pending">Pending</SelectItem>
 							<SelectItem value="In Progress">
 								In Progress
@@ -774,7 +728,7 @@ const TicketPage = () => {
 													)}
 												</td>
 
-												{/* Resolution Proof Dialog */}
+												{/* Resolution Proof RequiredDialog */}
 												<Dialog
 													open={isProofDialogOpen}
 													onOpenChange={
@@ -988,7 +942,11 @@ const TicketPage = () => {
 																				selectedStatus[
 																					ticket
 																						.ticket_id
-																				]
+																				],
+																				resolutionProof[
+																					ticket
+																						.ticket_id
+																				] // pass the proof if status is Resolved
 																			);
 																		}
 																		handleStatus(
@@ -1000,47 +958,68 @@ const TicketPage = () => {
 																</button>
 																<button
 																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-																	onClick={() =>
+																	onClick={async () => {
+																		if (
+																			selectedStatus[
+																				ticket
+																					.ticket_id
+																			]
+																		) {
+																			await updateStatus(
+																				ticket.ticket_id,
+																				selectedStatus[
+																					ticket
+																						.ticket_id
+																				],
+																				selectedStatus[
+																					ticket
+																						.ticket_id
+																				] ===
+																					"Resolved"
+																					? resolutionProof[
+																							ticket
+																								.ticket_id
+																					  ]
+																					: undefined
+																			);
+																		}
 																		handleStatus(
 																			ticket.ticket_id
-																		)
-																	} // Just exits edit mode
+																		); // Exit edit mode
+																	}}
 																>
 																	Cancel
 																</button>
 															</div>
 														</>
 													) : (
-														ticket.status !==
-															"Resolved" && ( // Hide button if ticket is resolved
-															<button
-																className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
+														<button
+															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
+																userRoles.includes(
+																	"Can Edit Status"
+																)
+																	? "hover:text-indigo-900 font-semibold"
+																	: "opacity-50 cursor-not-allowed font-semibold"
+															}`}
+															disabled={
+																!userRoles.includes(
+																	"Can Edit Status"
+																)
+															}
+															onClick={() => {
+																if (
 																	userRoles.includes(
 																		"Can Edit Status"
 																	)
-																		? "hover:text-indigo-900 font-semibold"
-																		: "opacity-50 cursor-not-allowed font-semibold"
-																}`}
-																disabled={
-																	!userRoles.includes(
-																		"Can Edit Status"
-																	)
+																) {
+																	handleStatus(
+																		ticket.ticket_id
+																	);
 																}
-																onClick={() => {
-																	if (
-																		userRoles.includes(
-																			"Can Edit Status"
-																		)
-																	) {
-																		handleStatus(
-																			ticket.ticket_id
-																		);
-																	}
-																}}
-															>
-																Edit Status
-															</button>
-														)
+															}}
+														>
+															Edit Status
+														</button>
 													)}
 
 													{priorityMode[

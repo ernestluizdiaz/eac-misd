@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import Logo from "@/../public/img/logo.png";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -62,12 +60,15 @@ export function LoginForm({
 				>
 					<Card>
 						<CardHeader className="flex items-center justify-center">
-							<Image
-								src={Logo}
-								alt="Logo"
-								width={75}
-								height={75}
-							/>
+							<h2 className="text-center text-[#7E57C2] text-4xl font-bold p-2">
+								MISD
+								<span className="text-[#34BFA3] text-4xl font-bold">
+									esk
+								</span>
+							</h2>
+							<h2 className="text-center text-[#7E57C2] text-l font-semibold">
+								Log in to your account
+							</h2>
 						</CardHeader>
 						<CardContent>
 							<form onSubmit={onSubmit}>
@@ -77,7 +78,8 @@ export function LoginForm({
 										<Input
 											id="email"
 											type="email"
-											placeholder="m@example.com"
+											style={{ borderColor: "#34BFA3" }}
+											placeholder=""
 											value={email}
 											onChange={(e) =>
 												setEmail(e.target.value)
@@ -94,6 +96,7 @@ export function LoginForm({
 										<Input
 											id="password"
 											type="password"
+											style={{ borderColor: "#34BFA3" }}
 											value={password}
 											onChange={(e) =>
 												setPassword(e.target.value)
@@ -118,7 +121,7 @@ export function LoginForm({
 									<div className="flex flex-col gap-3 ">
 										<Button
 											type="submit"
-											className="w-full"
+											className="w-full !bg-[#34BFA3] hover:!bg-[#52ac9a] text-white"
 											disabled={loading}
 										>
 											{loading

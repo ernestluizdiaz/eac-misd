@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import Logo from "@/../public/img/misdesklogo.png";
-
+import Logo from "@/../public/img/logo2.png";
 const Nav = () => {
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
@@ -26,14 +25,8 @@ const Nav = () => {
 	}, []);
 
 	return (
-		<nav
-			className={`fixed w-full z-50 transition-all duration-300 ${
-				isScrolled
-					? "bg-white text-white shadow-lg border-b border-gray-200 "
-					: "bg-transparent"
-			}`}
-		>
-			<div className="flex flex-wrap items-center justify-between md:mx-10 lg:mx-20 p-3">
+		<nav className="fixed w-full bg-white border-gray-200 dark:bg-gray-900 shadow-lg z-20">
+			<div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
 				<Link
 					href="/"
 					className="flex items-center gap-2 text-xl font-bold"
@@ -53,7 +46,7 @@ const Nav = () => {
 				<button
 					onClick={toggleMenu}
 					type="button"
-					className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+					className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-[#34BFA3] rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
 					aria-controls="navbar-default"
 					aria-expanded={isOpen}
 				>
@@ -82,32 +75,46 @@ const Nav = () => {
 					}`}
 					id="navbar-default"
 				>
-					<ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0">
-						{[
-							{ href: "/", label: "Tickets" },
-							{ href: "/track-tickets", label: "Track Tickets" },
-							{ href: "/login", label: "Login" },
-						].map(({ href, label }) => (
-							<li key={href}>
-								<Link
-									href={href}
-									className={`block py-2 px-3 rounded-sm md:p-0 ${
-										pathname === href
-											? isScrolled
-												? "text-[#7E57C2] font-bold"
-												: "text-white font-bold"
-											: isScrolled
-											? "text-[#7E57C2]"
-											: "text-white"
-									}`}
-									aria-current={
-										pathname === href ? "page" : undefined
-									}
-								>
-									{label}
-								</Link>
-							</li>
-						))}
+					<ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+						<li>
+							<Link
+								href="/"
+								className={`block py-2 px-3 rounded-sm md:p-0 ${
+									pathname === "/"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
+								}`}
+								aria-current={
+									pathname === "/" ? "page" : undefined
+								}
+							>
+								Tickets
+							</Link>
+						</li>
+						<li>
+							<Link
+								href="/track-tickets"
+								className={`block py-2 px-3 rounded-sm md:p-0 ${
+									pathname === "/track-tickets"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
+								}`}
+							>
+								Track Tickets
+							</Link>
+						</li>
+						<li>
+							<Link
+								href="/login"
+								className={`block py-2 px-3 rounded-sm md:p-0 ${
+									pathname === "/login"
+										? "text-[#34BFA3]"
+										: "text-[#7E57C2]"
+								}`}
+							>
+								Login
+							</Link>
+						</li>
 					</ul>
 				</div>
 			</div>

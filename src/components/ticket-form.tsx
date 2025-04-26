@@ -237,7 +237,7 @@ const TicketForm = () => {
 									<FormLabel>EAC Email Address</FormLabel>
 									<FormControl>
 										<Input
-											placeholder="john.doe@example.com"
+											placeholder="john.doe@eac.edu.ph"
 											{...field}
 										/>
 									</FormControl>

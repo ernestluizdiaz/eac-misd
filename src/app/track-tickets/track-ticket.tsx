@@ -69,17 +69,40 @@ const TrackTickets = () => {
 
 		setLoading(true);
 
-		const { data, error } = await supabase
-			.from("tickets")
-			.select(
-				`
-        ticket_id, first_name, last_name, email, category, description, priority_level, assign_to, status,
-        department:department_id (name),
-        filer:filer_id (name)
-      `
-			)
-			.ilike("email", `%${inputEmail}%`);
+		const cleanedInput = inputEmail.replace(/\D/g, "");
+		const isTicketNumber = /^\d+$/.test(cleanedInput);
 
+		let query;
+
+		if (isTicketNumber) {
+			// Search by ticket ID
+			query = supabase
+				.from("tickets")
+				.select(
+					`
+					ticket_id, first_name, last_name, email, category, description, priority_level, assign_to, status,
+					department:department_id (name),
+					filer:filer_id (name)
+					`
+				)
+				.eq("ticket_id", parseInt(cleanedInput, 10));
+		} else {
+			// Search by email
+			query = supabase
+				.from("tickets")
+				.select(
+					`
+					ticket_id, first_name, last_name, email, category, description, priority_level, assign_to, status,
+					department:department_id (name),
+					filer:filer_id (name)
+					`
+				)
+				.ilike("email", `%${inputEmail}%`);
+		}
+
+		const { data, error } = await query;
+
+		// Rest of your function remains the same
 		if (error) {
 			setTicketError(error.message);
 			setTickets([]);
@@ -169,7 +192,7 @@ const TrackTickets = () => {
 									/>
 								</div>
 								<input
-									type="email"
+									type="text"
 									style={{ borderColor: "#34BFA3" }}
 									onFocus={(e) => {
 										e.target.style.boxShadow =

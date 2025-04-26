@@ -521,7 +521,6 @@ const TicketPage = () => {
 					.includes(searchLower) ||
 				(ticket.status ?? "").toLowerCase().includes(searchLower);
 
-			// Filter based on sortOption for status only
 			if (["Pending", "In Progress", "Resolved"].includes(sortOption)) {
 				return matchesSearch && ticket.status === sortOption;
 			}
@@ -529,9 +528,12 @@ const TicketPage = () => {
 			return matchesSearch;
 		})
 		.sort((a, b) => {
-			// Always sort by ticket_id ascending by default
 			return a.ticket_id - b.ticket_id;
 		});
+
+	const allResolved = filteredAndSortedTickets.every(
+		(ticket) => ticket.status === "Resolved"
+	);
 
 	// Fetch user roles from
 	const [userRoles, setUserRoles] = React.useState<string[]>([]);
@@ -630,9 +632,11 @@ const TicketPage = () => {
 									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
 										Assign To
 									</th>
-									<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-										Actions
-									</th>
+									{!allResolved && (
+										<th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+											Actions
+										</th>
+									)}
 								</tr>
 							</thead>
 							<tbody className="bg-white divide-y divide-gray-200">
@@ -684,7 +688,6 @@ const TicketPage = () => {
 													{ticket.description}
 												</td>
 
-												{/* Your existing table cell with status dropdown */}
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{statusMode[
 														ticket.ticket_id
@@ -861,6 +864,7 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
+
 												<td className="px-6 py-4 whitespace-nowrap text-sm text-black">
 													{assignMode[
 														ticket.ticket_id
@@ -922,227 +926,231 @@ const TicketPage = () => {
 														</span>
 													)}
 												</td>
-												<td className="px-6 py-4 whitespace-nowrap space-y-1 text-sm text-gray-500 flex flex-col items-start">
-													{statusMode[
-														ticket.ticket_id
-													] ? (
-														<>
-															<div className="flex flex-row gap-2">
-																<button
-																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
-																	onClick={async () => {
-																		if (
-																			selectedStatus[
-																				ticket
-																					.ticket_id
-																			]
-																		) {
-																			await updateStatus(
-																				ticket.ticket_id,
+
+												{ticket.status !==
+													"Resolved" && (
+													<td className="px-6 py-4 whitespace-nowrap space-y-1 text-sm text-gray-500 flex flex-col items-start">
+														{statusMode[
+															ticket.ticket_id
+														] ? (
+															<>
+																<div className="flex flex-row gap-2">
+																	<button
+																		className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
+																		onClick={async () => {
+																			if (
 																				selectedStatus[
 																					ticket
 																						.ticket_id
-																				],
-																				resolutionProof[
-																					ticket
-																						.ticket_id
-																				] // pass the proof if status is Resolved
-																			);
-																		}
-																		handleStatus(
-																			ticket.ticket_id
-																		); // Exit edit mode after saving
-																	}}
-																>
-																	Save
-																</button>
-																<button
-																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-																	onClick={async () => {
-																		if (
-																			selectedStatus[
-																				ticket
-																					.ticket_id
-																			]
-																		) {
-																			await updateStatus(
-																				ticket.ticket_id,
+																				]
+																			) {
+																				await updateStatus(
+																					ticket.ticket_id,
+																					selectedStatus[
+																						ticket
+																							.ticket_id
+																					],
+																					resolutionProof[
+																						ticket
+																							.ticket_id
+																					] // pass the proof if status is Resolved
+																				);
+																			}
+																			handleStatus(
+																				ticket.ticket_id
+																			); // Exit edit mode after saving
+																		}}
+																	>
+																		Save
+																	</button>
+																	<button
+																		className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																		onClick={async () => {
+																			if (
 																				selectedStatus[
 																					ticket
 																						.ticket_id
-																				],
-																				selectedStatus[
-																					ticket
-																						.ticket_id
-																				] ===
-																					"Resolved"
-																					? resolutionProof[
-																							ticket
-																								.ticket_id
-																					  ]
-																					: undefined
-																			);
-																		}
-																		handleStatus(
-																			ticket.ticket_id
-																		); // Exit edit mode
-																	}}
-																>
-																	Cancel
-																</button>
-															</div>
-														</>
-													) : (
-														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
-																userRoles.includes(
-																	"Can Edit Status"
-																)
-																	? "hover:text-indigo-900 font-semibold"
-																	: "opacity-50 cursor-not-allowed font-semibold"
-															}`}
-															disabled={
-																!userRoles.includes(
-																	"Can Edit Status"
-																)
-															}
-															onClick={() => {
-																if (
+																				]
+																			) {
+																				await updateStatus(
+																					ticket.ticket_id,
+																					selectedStatus[
+																						ticket
+																							.ticket_id
+																					],
+																					selectedStatus[
+																						ticket
+																							.ticket_id
+																					] ===
+																						"Resolved"
+																						? resolutionProof[
+																								ticket
+																									.ticket_id
+																						  ]
+																						: undefined
+																				);
+																			}
+																			handleStatus(
+																				ticket.ticket_id
+																			); // Exit edit mode
+																		}}
+																	>
+																		Cancel
+																	</button>
+																</div>
+															</>
+														) : (
+															<button
+																className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
 																	userRoles.includes(
 																		"Can Edit Status"
 																	)
-																) {
-																	handleStatus(
-																		ticket.ticket_id
-																	);
+																		? "hover:text-indigo-900 font-semibold"
+																		: "opacity-50 cursor-not-allowed font-semibold"
+																}`}
+																disabled={
+																	!userRoles.includes(
+																		"Can Edit Status"
+																	)
 																}
-															}}
-														>
-															Edit Status
-														</button>
-													)}
-
-													{priorityMode[
-														ticket.ticket_id
-													] ? (
-														<>
-															<div className="flex flex-row gap-2">
-																<button
-																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
-																	onClick={async () => {
-																		await [
-																			updatePriority(
-																				ticket.ticket_id
-																			),
-																		];
-																		handlePriority(
-																			ticket.ticket_id
-																		); // Exit edit mode after saving
-																	}}
-																>
-																	Save
-																</button>
-																<button
-																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-																	onClick={() =>
-																		handlePriority(
-																			ticket.ticket_id
+																onClick={() => {
+																	if (
+																		userRoles.includes(
+																			"Can Edit Status"
 																		)
-																	} // Just exits edit mode
-																>
-																	Cancel
-																</button>
-															</div>
-														</>
-													) : (
-														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-6 ${
-																userRoles.includes(
-																	"Can Edit Priority"
-																)
-																	? "hover:text-indigo-900 font-semibold"
-																	: "opacity-50 cursor-not-allowed font-semibold"
-															}`}
-															disabled={
-																!userRoles.includes(
-																	"Can Edit Priority"
-																)
-															}
-															onClick={() => {
-																if (
+																	) {
+																		handleStatus(
+																			ticket.ticket_id
+																		);
+																	}
+																}}
+															>
+																Edit Status
+															</button>
+														)}
+
+														{priorityMode[
+															ticket.ticket_id
+														] ? (
+															<>
+																<div className="flex flex-row gap-2">
+																	<button
+																		className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
+																		onClick={async () => {
+																			await [
+																				updatePriority(
+																					ticket.ticket_id
+																				),
+																			];
+																			handlePriority(
+																				ticket.ticket_id
+																			); // Exit edit mode after saving
+																		}}
+																	>
+																		Save
+																	</button>
+																	<button
+																		className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																		onClick={() =>
+																			handlePriority(
+																				ticket.ticket_id
+																			)
+																		} // Just exits edit mode
+																	>
+																		Cancel
+																	</button>
+																</div>
+															</>
+														) : (
+															<button
+																className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-6 ${
 																	userRoles.includes(
 																		"Can Edit Priority"
 																	)
-																) {
+																		? "hover:text-indigo-900 font-semibold"
+																		: "opacity-50 cursor-not-allowed font-semibold"
+																}`}
+																disabled={
+																	!userRoles.includes(
+																		"Can Edit Priority"
+																	)
 																}
-																handlePriority(
-																	ticket.ticket_id
-																);
-															}}
-														>
-															Edit Priority
-														</button>
-													)}
-
-													{assignMode[
-														ticket.ticket_id
-													] ? (
-														<>
-															<div className="flex flex-row gap-2">
-																<button
-																	className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
-																	onClick={async () => {
-																		await updateAssignedTo(
-																			ticket.ticket_id
-																		);
-																		handleAssign(
-																			ticket.ticket_id
-																		);
-																	}}
-																>
-																	Save
-																</button>
-																<button
-																	className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
-																	onClick={() =>
-																		handleAssign(
-																			ticket.ticket_id
+																onClick={() => {
+																	if (
+																		userRoles.includes(
+																			"Can Edit Priority"
 																		)
+																	) {
 																	}
-																>
-																	Cancel
-																</button>
-															</div>
-														</>
-													) : (
-														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-10 ${
-																userRoles.includes(
-																	"Can Assign"
-																)
-																	? "hover:text-indigo-900 font-semibold"
-																	: "opacity-50 cursor-not-allowed font-semibold"
-															}`}
-															disabled={
-																!userRoles.includes(
-																	"Can Assign"
-																)
-															}
-															onClick={() => {
-																if (
+																	handlePriority(
+																		ticket.ticket_id
+																	);
+																}}
+															>
+																Edit Priority
+															</button>
+														)}
+
+														{assignMode[
+															ticket.ticket_id
+														] ? (
+															<>
+																<div className="flex flex-row gap-2">
+																	<button
+																		className="cursor-pointer font-semibold text-white bg-[#34BFA3] py-1 px-6 rounded-sm hover:text-green-900"
+																		onClick={async () => {
+																			await updateAssignedTo(
+																				ticket.ticket_id
+																			);
+																			handleAssign(
+																				ticket.ticket_id
+																			);
+																		}}
+																	>
+																		Save
+																	</button>
+																	<button
+																		className="cursor-pointer font-semibold text-red-600 hover:text-red-900"
+																		onClick={() =>
+																			handleAssign(
+																				ticket.ticket_id
+																			)
+																		}
+																	>
+																		Cancel
+																	</button>
+																</div>
+															</>
+														) : (
+															<button
+																className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-10 ${
 																	userRoles.includes(
 																		"Can Assign"
 																	)
-																)
-																	handleAssign(
-																		ticket.ticket_id
-																	);
-															}}
-														>
-															Assign
-														</button>
-													)}
-												</td>
+																		? "hover:text-indigo-900 font-semibold"
+																		: "opacity-50 cursor-not-allowed font-semibold"
+																}`}
+																disabled={
+																	!userRoles.includes(
+																		"Can Assign"
+																	)
+																}
+																onClick={() => {
+																	if (
+																		userRoles.includes(
+																			"Can Assign"
+																		)
+																	)
+																		handleAssign(
+																			ticket.ticket_id
+																		);
+																}}
+															>
+																Assign
+															</button>
+														)}
+													</td>
+												)}
 											</tr>
 										))
 								)}

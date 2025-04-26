@@ -52,7 +52,7 @@ export function LoginForm({
 	}, []);
 
 	return (
-		<div className="flex w-full h-[70svh] items-center justify-center">
+		<div className="flex w-full min-h-screen items-center justify-center">
 			<div className="w-full max-w-sm">
 				<div
 					className={cn("flex flex-col gap-6", className)}

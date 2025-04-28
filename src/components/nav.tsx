@@ -25,7 +25,7 @@ const Nav = () => {
 	}, []);
 
 	return (
-		<nav className="fixed w-full bg-white border-gray-200 dark:bg-gray-900 shadow-lg z-20">
+		<nav className="w-full bg-white border-gray-200 dark:bg-gray-900 shadow-lg z-20">
 			<div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
 				<Link
 					href="/"

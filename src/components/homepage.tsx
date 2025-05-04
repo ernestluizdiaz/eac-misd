@@ -17,9 +17,10 @@ const Homepage = () => {
 						<span className="text-[#34BFA3]">esk</span>!
 					</h1>
 					<p className="text-xl mt-4">
-						Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-						sed do eiusmod tempor incididunt ut labore et dolore
-						magna aliqua.
+						MISDesk is a ticketing system designed to provide fast
+						and efficient support for MISD-related concerns. Submit,
+						track, and resolve your issues with ease—all in one
+						place.
 					</p>
 					<button
 						onClick={() => {

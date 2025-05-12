@@ -727,8 +727,17 @@ const TicketPage = () => {
 															</SelectContent>
 														</Select>
 													) : (
-														ticket.status ||
-														"Pending"
+														<span
+															className={`font-semibold text-sm px-4 py-1 rounded-full
+																${ticket.status === "Pending" ? "text-yellow-600 bg-yellow-100" :
+																ticket.status === "Resolved" ? "text-green-600 bg-green-100" :
+																ticket.status === "In Progress" ? "text-blue-600 bg-blue-100" :
+																"text-gray-600 bg-gray-100"}
+															`}
+															>
+															{ticket.status || "Pending"}
+														</span>
+
 													)}
 												</td>
 
@@ -859,10 +868,17 @@ const TicketPage = () => {
 															</SelectContent>
 														</Select>
 													) : (
-														<span>
-															{ticket.priority_level ||
-																"Not Set"}
+														<span
+														className={`font-semibold px-2 py-1 rounded
+															${ticket.priority_level === "Low" ? "text-green-600 " :
+															ticket.priority_level === "Moderate" ? "text-yellow-600 " :
+															ticket.priority_level === "High" ? "text-red-600 " :
+															"text-gray-600 bg-gray-100"}
+														`}
+														>
+														{ticket.priority_level || "Not Set"}
 														</span>
+
 													)}
 												</td>
 

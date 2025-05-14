@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
+import { handlePdfDownload } from "@/app/dashboard/pdf";
 interface Department {
 	name: string;
 }
@@ -729,15 +729,23 @@ const TicketPage = () => {
 													) : (
 														<span
 															className={`font-semibold text-sm px-4 py-1 rounded-full
-																${ticket.status === "Pending" ? "text-yellow-600 bg-yellow-100" :
-																ticket.status === "Resolved" ? "text-green-600 bg-green-100" :
-																ticket.status === "In Progress" ? "text-blue-600 bg-blue-100" :
-																"text-gray-600 bg-gray-100"}
+																${
+																	ticket.status ===
+																	"Pending"
+																		? "text-yellow-600 bg-yellow-100"
+																		: ticket.status ===
+																		  "Resolved"
+																		? "text-green-600 bg-green-100"
+																		: ticket.status ===
+																		  "In Progress"
+																		? "text-blue-600 bg-blue-100"
+																		: "text-gray-600 bg-gray-100"
+																}
 															`}
-															>
-															{ticket.status || "Pending"}
+														>
+															{ticket.status ||
+																"Pending"}
 														</span>
-
 													)}
 												</td>
 
@@ -869,16 +877,24 @@ const TicketPage = () => {
 														</Select>
 													) : (
 														<span
-														className={`font-semibold px-2 py-1 rounded
-															${ticket.priority_level === "Low" ? "text-green-600 " :
-															ticket.priority_level === "Moderate" ? "text-yellow-600 " :
-															ticket.priority_level === "High" ? "text-red-600 " :
-															"text-gray-600 bg-gray-100"}
+															className={`font-semibold px-2 py-1 rounded
+															${
+																ticket.priority_level ===
+																"Low"
+																	? "text-green-600 "
+																	: ticket.priority_level ===
+																	  "Moderate"
+																	? "text-yellow-600 "
+																	: ticket.priority_level ===
+																	  "High"
+																	? "text-red-600 "
+																	: "text-gray-600 bg-gray-100"
+															}
 														`}
 														>
-														{ticket.priority_level || "Not Set"}
+															{ticket.priority_level ||
+																"Not Set"}
 														</span>
-
 													)}
 												</td>
 
@@ -1016,7 +1032,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-7 ${
+															className={`text-blue-400 rounded-sm border-blue-400 w-full border-2 py-1 px-7 ${
 																userRoles.includes(
 																	"Can Edit Status"
 																)
@@ -1078,7 +1094,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-6 ${
+															className={`text-blue-400 rounded-sm border-blue-400 w-full border-2 py-1 px-6 ${
 																userRoles.includes(
 																	"Can Edit Priority"
 																)
@@ -1138,7 +1154,7 @@ const TicketPage = () => {
 														</>
 													) : (
 														<button
-															className={`text-blue-400 rounded-sm border-blue-400 border-2 py-1 px-10 ${
+															className={`text-blue-400 rounded-sm border-blue-400 w-full border-2 py-1 px-10 ${
 																userRoles.includes(
 																	"Can Assign"
 																)
@@ -1164,6 +1180,19 @@ const TicketPage = () => {
 															Assign
 														</button>
 													)}
+
+													<div className="">
+														<button
+															className="w-full cursor-pointer font-semibold text-white bg-[#34BFA3] py-2 px-4 rounded-md hover:bg-[#2ea38a]"
+															onClick={() =>
+																handlePdfDownload(
+																	ticket.ticket_id
+																)
+															}
+														>
+															Generate PDF Report
+														</button>
+													</div>
 												</td>
 											</tr>
 										))

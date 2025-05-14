@@ -322,95 +322,107 @@ const TeamsPage = () => {
 								className="space-y-5 w-full"
 							>
 								<div className="flex flex-row gap-6">
-								{/* Display Name Field */}
-								<FormField
-									control={form.control}
-									name="displayName"
-									render={({ field }) => (
-										<FormItem className="flex-1">
-											<FormLabel>Display Name</FormLabel>
-											<FormControl>
-												<Input {...field} className="w-full"/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								{/* Password Field */}
-								<FormField
-									control={form.control}
-									name="password"
-									render={({ field }) => (
-										<FormItem className="flex-1">
-											<FormLabel>Password</FormLabel>
-											<FormControl>
-												<Input
-													type="password"
-													{...field} className="w-full"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+									{/* Display Name Field */}
+									<FormField
+										control={form.control}
+										name="displayName"
+										render={({ field }) => (
+											<FormItem className="flex-1">
+												<FormLabel>
+													Display Name
+												</FormLabel>
+												<FormControl>
+													<Input
+														{...field}
+														className="w-full"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{/* Password Field */}
+									<FormField
+										control={form.control}
+										name="password"
+										render={({ field }) => (
+											<FormItem className="flex-1">
+												<FormLabel>Password</FormLabel>
+												<FormControl>
+													<Input
+														type="password"
+														{...field}
+														className="w-full"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 								</div>
 								<div className="flex flex-row gap-6">
-								{/* Email Field */}
-								<FormField
-									control={form.control}
-									name="email"
-									render={({ field }) => (
-										<FormItem className="flex-1">
-											<FormLabel>Email</FormLabel>
-											<FormControl>
-												<Input
-													type="email"
-													{...field} className="w-full"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								{/* Confirm Password Field */}
-								<FormField
-									control={form.control}
-									name="confirmPassword"
-									render={({ field }) => (
-										<FormItem className="flex-1">
-											<FormLabel>
-												Confirm Password
-											</FormLabel>
-											<FormControl>
-												<Input
-													type="password"
-													{...field} className="w-full"
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+									{/* Email Field */}
+									<FormField
+										control={form.control}
+										name="email"
+										render={({ field }) => (
+											<FormItem className="flex-1">
+												<FormLabel>Email</FormLabel>
+												<FormControl>
+													<Input
+														type="email"
+														{...field}
+														className="w-full"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{/* Confirm Password Field */}
+									<FormField
+										control={form.control}
+										name="confirmPassword"
+										render={({ field }) => (
+											<FormItem className="flex-1">
+												<FormLabel>
+													Confirm Password
+												</FormLabel>
+												<FormControl>
+													<Input
+														type="password"
+														{...field}
+														className="w-full"
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
 								</div>
 								<div className="flex justify-center">
-								{/* Submit Button */}
-								<div className="cursor-not-allowed">
-									<Button
-										className={`${
-											userRoles.includes("Can Add Teams")
-												? "cursor-pointer w-full px-40 bg-[#34BFA3] "
-												: "opacity-50 cursor-not-allowed w-full "
-										}`}
-										type="submit"
-										disabled={
-											loading ||
-											!userRoles.includes("Can Add Teams")
-										}
-									>
-										{loading
-											? "Registering..."
-											: "Add Account"}
-									</Button>
+									{/* Submit Button */}
+									<div className="cursor-not-allowed w-full overflow-auto">
+										<Button
+											className={`${
+												userRoles.includes(
+													"Can Add Teams"
+												)
+													? "cursor-pointer w-full px-40 bg-[#34BFA3] "
+													: "opacity-50 cursor-not-allowed w-full "
+											}`}
+											type="submit"
+											disabled={
+												loading ||
+												!userRoles.includes(
+													"Can Add Teams"
+												)
+											}
+										>
+											{loading
+												? "Registering..."
+												: "Add Account"}
+										</Button>
 									</div>
 								</div>
 							</form>
